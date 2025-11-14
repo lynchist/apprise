@@ -173,7 +173,7 @@ class PluginManager(metaclass=Singleton):
             # The .py extension is optional as we support loading directories
             # too
             module_re = re.compile(
-                r"^(?P<name>(?!base|_)[a-z0-9_]+)(\.py)?$", re.I
+                r"^(?P<name>(?!base|_)[a-z0-9_]+)(\.pyc?)?$", re.I
             )
 
             t_start = time.time()
@@ -297,7 +297,7 @@ class PluginManager(metaclass=Singleton):
         # file that starts with an underscore or dash
         # We allow for __init__.py as well
         module_re = re.compile(
-            r"^(?P<name>[_a-z0-9][a-z0-9._-]+)?(\.py)?$", re.I
+            r"^(?P<name>[_a-z0-9][a-z0-9._-]+)?(\.pyc?)?$", re.I
         )
 
         # Validate if we're a loadable Python file or not
