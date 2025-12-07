@@ -107,7 +107,7 @@ apprise_url_tests = (
         "matrix://user:pass@localhost/#room1/#room2/!room1",
         {
             "instance": NotifyMatrix,
-            # throw a bizzare code forcing us to fail to look it up
+            # throw a bizarre code forcing us to fail to look it up
             "response": False,
             "requests_response_code": 999,
         },
@@ -117,7 +117,7 @@ apprise_url_tests = (
         {
             "instance": NotifyMatrix,
             # Throws a series of i/o exceptions with this flag
-            # is set and tests that we gracfully handle them
+            # is set and tests that we gracefully handle them
             "test_requests_exceptions": True,
             # Our expected url(privacy=True) startswith() response:
             "privacy_url": "matrix://user:****@localhost:1234/",
@@ -260,7 +260,7 @@ apprise_url_tests = (
         {
             "instance": NotifyMatrix,
             # Throws a series of i/o exceptions with this flag
-            # is set and tests that we gracfully handle them
+            # is set and tests that we gracefully handle them
             "test_requests_exceptions": True,
         },
     ),
@@ -291,7 +291,7 @@ apprise_url_tests = (
         "matrix://user:token@localhost/mode=matrix",
         {
             "instance": NotifyMatrix,
-            # throw a bizzare code forcing us to fail to look it up
+            # throw a bizarre code forcing us to fail to look it up
             "response": False,
             "requests_response_code": 999,
         },
@@ -301,7 +301,7 @@ apprise_url_tests = (
         {
             "instance": NotifyMatrix,
             # Throws a series of i/o exceptions with this flag
-            # is set and tests that we gracfully handle them
+            # is set and tests that we gracefully handle them
             "test_requests_exceptions": True,
         },
     ),
@@ -310,7 +310,7 @@ apprise_url_tests = (
         {
             "instance": NotifyMatrix,
             # Throws a series of i/o exceptions with this flag
-            # is set and tests that we gracfully handle them
+            # is set and tests that we gracefully handle them
             "test_requests_exceptions": True,
         },
     ),
@@ -1759,3 +1759,85 @@ def test_plugin_matrix_transaction_ids_api_v3_w_cache(
         assert mock_get.call_count == 0
         assert mock_post.call_count == 0
         assert mock_put.call_count == 0
+
+@mock.patch("requests.put")
+@mock.patch("requests.get")
+@mock.patch("requests.post")
+def test_plugin_matrix_v3_url_with_port_assembly(
+    mock_post, mock_get, mock_put, tmpdir
+):
+    """NotifyMatrix() URL with Port Assembly Checks (v3)"""
+
+    # Prepare a good response
+    response = mock.Mock()
+    response.status_code = requests.codes.ok
+    response.content = MATRIX_GOOD_RESPONSE.encode("utf-8")
+
+    # Prepare Mock return object
+    mock_post.return_value = response
+    mock_get.return_value = response
+    mock_put.return_value = response
+
+    asset = AppriseAsset(
+        storage_mode=PersistentStoreMode.FLUSH,
+        storage_path=str(tmpdir),
+    )
+
+    # Instantiate our object
+    obj = Apprise.instantiate(
+        "matrixs://user1:pass123@example.ca:8080/#general?v=3", asset=asset
+    )
+    # Performs a login
+    assert (
+        obj.notify(body="body", title="title", notify_type=NotifyType.INFO)
+        is True
+    )
+
+    # Secure Connections have a bit of additional overhead to verify
+    # the authenticity of the server through discovery
+    assert mock_get.call_count == 3
+    assert (
+        mock_get.call_args_list[0][0][0]
+        == "https://example.ca:8080/.well-known/matrix/client"
+    )
+    assert (
+        mock_get.call_args_list[1][0][0]
+        == "https://matrix.example.com/_matrix/client/versions"
+    )
+    assert (
+        mock_get.call_args_list[2][0][0]
+        == "https://vector.im/_matrix/identity/v2"
+    )
+
+    assert mock_post.call_count == 2
+    # matrix.example.com comes from our MATRIX_GOOD_RESPONSE
+    # response which defines wht our .well-known returned to us
+    assert (
+        mock_post.call_args_list[0][0][0]
+        == "https://matrix.example.com/_matrix/client/v3/login"
+    )
+    assert (
+        mock_post.call_args_list[1][0][0]
+        == "https://matrix.example.com/_matrix/client/v3/"
+        "join/%23general%3Alocalhost"
+    )
+    assert mock_put.call_count == 1
+    assert (
+        mock_put.call_args_list[0][0][0]
+        == "https://matrix.example.com/_matrix/client/v3/rooms/"
+        + "%21abc123%3Alocalhost/send/m.room.message/0"
+    )
+
+    mock_post.reset_mock()
+    mock_get.reset_mock()
+    mock_put.reset_mock()
+
+    assert obj.base_url == "https://matrix.example.com"
+
+    # Cache is used under the hood; no second discover is performed
+    assert mock_put.call_count == 0
+    assert mock_get.call_count == 0
+    assert mock_post.call_count == 0
+
+    # Cleanup
+    del obj

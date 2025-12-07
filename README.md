@@ -62,8 +62,10 @@ The table below identifies the services this tool supports and some example serv
 | [AWS SES](https://github.com/caronc/apprise/wiki/Notify_ses)  | ses://   | (TCP) 443   | ses://user@domain/AccessKeyID/AccessSecretKey/RegionName<br/>ses://user@domain/AccessKeyID/AccessSecretKey/RegionName/email1/email2/emailN
 | [Bark](https://github.com/caronc/apprise/wiki/Notify_bark)  | bark://   | (TCP) 80 or 443   | bark://hostname<br />bark://hostname/device_key<br />bark://hostname/device_key1/device_key2/device_keyN<br/>barks://hostname<br />barks://hostname/device_key<br />barks://hostname/device_key1/device_key2/device_keyN
 | [BlueSky](https://github.com/caronc/apprise/wiki/Notify_bluesky) | bluesky://  | (TCP) 443   | bluesky://Handle:AppPw<br />bluesky://Handle:AppPw/TargetHandle<br />bluesky://Handle:AppPw/TargetHandle1/TargetHandle2/TargetHandleN
+| [Brevo](https://github.com/caronc/apprise/wiki/Notify_brevo) | brevo://  | (TCP) 443   | brevo://APIToken:FromEmail/<br />brevo://APIToken:FromEmail/ToEmail<br />brevo://APIToken:FromEmail/ToEmail1/ToEmail2/ToEmailN/
 | [Chanify](https://github.com/caronc/apprise/wiki/Notify_chanify) | chantify://    | (TCP) 443    | chantify://token
 | [Discord](https://github.com/caronc/apprise/wiki/Notify_discord)  | discord://   | (TCP) 443   | discord://webhook_id/webhook_token<br />discord://avatar@webhook_id/webhook_token
+| [Dot.](https://github.com/caronc/apprise/wiki/Notify_dot)  | dot:// | (TCP) 443 | dot://apikey@device_id/text/<br />dot://apikey@device_id/image/<br />**Note**: `device_id` is the Quote/0 hardware serial
 | [Emby](https://github.com/caronc/apprise/wiki/Notify_emby)  | emby:// or embys:// | (TCP) 8096 | emby://user@hostname/<br />emby://user:password@hostname
 | [Enigma2](https://github.com/caronc/apprise/wiki/Notify_enigma2)  | enigma2:// or enigma2s:// | (TCP) 80 or 443 | enigma2://hostname
 | [FCM](https://github.com/caronc/apprise/wiki/Notify_fcm) | fcm://    | (TCP) 443    | fcm://project@apikey/DEVICE_ID<br />fcm://project@apikey/#TOPIC<br/>fcm://project@apikey/DEVICE_ID1/#topic1/#topic2/DEVICE_ID2/
@@ -92,6 +94,7 @@ The table below identifies the services this tool supports and some example serv
 | [Nextcloud](https://github.com/caronc/apprise/wiki/Notify_nextcloud) | ncloud:// or nclouds:// | (TCP) 80 or 443 | ncloud://adminuser:pass@host/User<br/>nclouds://adminuser:pass@host/User1/User2/UserN
 | [NextcloudTalk](https://github.com/caronc/apprise/wiki/Notify_nextcloudtalk) | nctalk:// or nctalks:// | (TCP) 80 or 443 | nctalk://user:pass@host/RoomId<br/>nctalks://user:pass@host/RoomId1/RoomId2/RoomIdN
 | [Notica](https://github.com/caronc/apprise/wiki/Notify_notica) | notica://  | (TCP) 443   | notica://Token/
+| [NotificationAPI](https://github.com/caronc/apprise/wiki/Notify_notificationapi) | napi://  | (TCP) 443   | napi://ClientID/ClientSecret/Target<br />napi://ClientID/ClientSecret/Target1/Target2/TargetN<br />napi://MessageType@ClientID/ClientSecret/Target
 | [Notifiarr](https://github.com/caronc/apprise/wiki/Notify_notifiarr) | notifiarr:// | (TCP) 443 | notifiarr://apikey/#channel<br />notifiarr://apikey/#channel1/#channel2/#channeln
 | [Notifico](https://github.com/caronc/apprise/wiki/Notify_notifico) | notifico://  | (TCP) 443   | notifico://ProjectID/MessageHook/
 | [ntfy](https://github.com/caronc/apprise/wiki/Notify_ntfy) | ntfy://  | (TCP) 80 or 443   | ntfy://topic/<br/>ntfys://topic/
