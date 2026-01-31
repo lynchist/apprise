@@ -28,7 +28,7 @@ The Apprise options are as follows:
   <stdin>.
 
   `-t`, `--title=`<VALUE>:
-  Specify the message title. This field is complete optional.
+  Specify the message title. This field is completely optional.
 
   `-c`, `--config=`<CONFIG-URL>:
   Specify one or more configuration locations.
@@ -41,7 +41,7 @@ The Apprise options are as follows:
   You can create your own notification by simply creating a Python file
   that contains the `@notify("schema")` decorator.
 
-  You can optioanly chose to specify more then one **--plugin-path** (**-P**)
+  You can optionally choose to specify more than one **--plugin-path** (**-P**)
   to increase the modules included.
 
   `-n`, `--notification-type=`<VALUE>:
@@ -56,22 +56,26 @@ The Apprise options are as follows:
   Specify the default theme.
 
   `-g`, `--tag=`<VALUE>:
-  Specify one or more tags to filter which services to notify. Use multiple
-  **--tag** (**-g**) entries to `OR` the tags together and comma separated
-  to `AND` them. If no tags are specified then all services are notified.
+  Specify one or more tags to filter which services to notify:
+
+  * `-g "tagA" -g "tagB"`: Match tagA **OR** tagB (Union).
+  * `-g "tagA,tagB"`: Match tagA **AND** tagB (Strict).
+  * `-g "all"`: Notify **ALL** services.
+  * `(Omitted)`: Notify **untagged** services only.
 
   `-Da`, `--disable-async`:
   Send notifications synchronously (one after the other) instead of
   all at once.
 
   `-R`, `--recursion-depth`<INTEGER>:
-  he number of recursive import entries that can be loaded from within
+  The number of recursive import entries that can be loaded from within
   Apprise configuration. By default this is set to 1. If this is set to
   zero, then import statements found in any configuration is ignored.
 
   `-e`, `--interpret-escapes`
   Enable interpretation of backslash escapes. For example, this would convert
   sequences such as \n and \r to their respected ascii new-line and carriage
+  return characters prior to the delivery of the notification.
 
   `-j`, `--interpret-emojis`
   Enable interpretation of emoji strings. For example, this would convert
@@ -83,7 +87,7 @@ The Apprise options are as follows:
 
   `-SM`, `--storage-mode=`<MODE>:
   Specify the persistent storage operational mode. Possible values are "auto",
-  "flush", and "memory". The default is "auto" not not specified.
+  "flush", and "memory". The default is "auto" if not specified.
 
   `-SPD`, `--storage-prune-days=`<INTEGER>:
   Define the number of days the storage prune should run using.
@@ -97,8 +101,6 @@ The Apprise options are as follows:
   `-d`, `--dry-run`:
   Perform a trial run but only prints the notification services to-be
   triggered to **stdout**. Notifications are never sent using this mode.
-
-  return characters prior to the delivery of the notification.
 
   `-l`, `--details`
   Prints details about the current services supported by Apprise.
@@ -117,7 +119,7 @@ The Apprise options are as follows:
 
 ## PERSISTENT STORAGE
 
-Persistent storage by default writes to the following location unless the environment variable `APPRISE_STORAGE_PATH` over-rides it and/or `--storage-path` (`-SP`) is specified to over-ride it:
+Persistent storage by default writes to the following location unless the environment variable `APPRISE_STORAGE_PATH` overrides it and/or `--storage-path` (`-SP`) is specified to override it:
 
     ~/.local/share/apprise/cache
 
@@ -134,12 +136,12 @@ The **storage** action has the following sub actions:
   nothing further is identified.
 
   `prune`:
-  Removes all persistent storage that has not been referenced for more then 30
+  Removes all persistent storage that has not been referenced for more than 30
   days. You can optionally set the `--storage-prune-days` to alter this
   default value.
 
   `clean`:
-  Removes all persistent storage reguardless of age.
+  Removes all persistent storage regardless of age.
 
 ## EXIT STATUS
 
@@ -154,10 +156,10 @@ The **storage** action has the following sub actions:
 
 ## SERVICE URLS
 
-There are to many service URL and combinations to list here. It's best to
+There are too many service URL and combinations to list here. It's best to
 visit the [Apprise GitHub page][serviceurls] and see what's available.
 
-[serviceurls]: https://github.com/caronc/apprise/wiki#notification-services
+[serviceurls]: https://appriseit.com/services/
 
 The **environment variable** of `APPRISE_URLS` (comma/space delimited) can be specified to
 provide the default set of URLs you wish to notify if none are otherwise specified.
@@ -189,6 +191,20 @@ notification service URLs and only notify the ones tagged as _devops_.
     $ apprise -vv -t "my title" -b "my notification body" \
        --config=https://localhost/my/apprise/config \
        -t devops
+
+**Tagging Logic Examples:**
+
+Notify any service tagged with "devops" OR "admin" (Union):
+
+    $ apprise -vv -t "Union Test" \
+       --config=~/apprise.yml \
+       -g devops -g admin
+
+Notify only services tagged with BOTH "devops" AND "critical" (Intersection):
+
+    $ apprise -vv -t "Intersection Test" \
+       --config=~/apprise.yml \
+       -g devops,critical
 
 Include an attachment:
 
@@ -240,10 +256,10 @@ it:
 
 ## CONFIGURATION
 
-A configuration file can be in the format of either **TEXT** or **YAML** where
-[TEXT][textconfig] is the easiest and most ideal solution for most users.  However
-[YAML][yamlconfig] configuration files grants the user a bit more leverage and access
-to some of the internal features of Apprise. Reguardless of which format you choose,
+An [Apprise configuration file][config] can be in the format of either **TEXT**
+or **YAML** where TEXT is the easiest and most ideal solution for most users.
+However YAML configuration files grants the user a bit more leverage and access
+to some of the internal features of Apprise. Regardless of which format you choose,
 both provide the users the ability to leverage **tagging** which adds a more rich and
 powerful notification environment.
 
@@ -288,27 +304,26 @@ configuration that you want and only specifically notify a subset of them:
         --body "Please go ahead and make dinner without me." \
         --tag=family
 
-[yamlconfig]: https://github.com/caronc/apprise/wiki/config_yaml
-[textconfig]: https://github.com/caronc/apprise/wiki/config_text
-[tagging]: https://github.com/caronc/apprise/wiki/CLI_Usage#label-leverage-tagging
-[pstorage]: https://github.com/caronc/apprise/wiki/persistent_storage
+[config]: https://appriseit.com/getting-started/configuration/
+[tagging]: https://appriseit.com/cli/usage/#tagging-and-filtering
+[pstorage]: https://appriseit.com/cli/persistent-storage/
 
 ## ENVIRONMENT VARIABLES
   `APPRISE_URLS`:
   Specify the default URLs to notify IF none are otherwise specified on the command line
-  explicitly.  If the `--config` (`-c`) is specified, then this will over-rides any
+  explicitly.  If the `--config` (`-c`) is specified, then this will override any
   reference to this variable. Use white space and/or a comma (`,`) to delimit multiple entries.
 
   `APPRISE_CONFIG_PATH`:
-  Explicitly specify the config search path to use (over-riding the default).
+  Explicitly specify the config search path to use (overriding the default).
   Use a semi-colon (`;`), line-feed (`\n`), and/or carriage return (`\r`) to delimit multiple entries.
 
   `APPRISE_PLUGIN_PATH`:
-  Explicitly specify the custom plugin search path to use (over-riding the default).
+  Explicitly specify the custom plugin search path to use (overriding the default).
   Use a semi-colon (`;`), line-feed (`\n`), and/or carriage return (`\r`) to delimit multiple entries.
 
   `APPRISE_STORAGE_PATH`:
-  Explicitly specify the persistent storage path to use (over-riding the default).
+  Explicitly specify the persistent storage path to use (overriding the default).
 
 ## BUGS
 
@@ -316,9 +331,10 @@ If you find any bugs, please make them known at:
 <https://github.com/caronc/apprise/issues>
 
 ## DONATIONS
-If you found Apprise useful at all, [please consider donating][donations]!
+If you found Apprise useful at all, [please consider sponsoring][sponsorship] or [donating][donating]!
 
-[donations]: https://github.com/caronc/apprise/wiki/persistent_storage
+[sponsorship]: https://github.com/sponsors/caronc
+[donating]: https://www.paypal.com/donate/?hosted_button_id=CR6YF7KLQWQ5E
 
 ## COPYRIGHT
 

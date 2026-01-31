@@ -73,7 +73,7 @@ class NotifyWhatsApp(NotifyBase):
     fb_graph_version = "v17.0"
 
     # A URL that takes you to the setup/help of the specific protocol
-    setup_url = "https://github.com/caronc/apprise/wiki/Notify_whatsapp"
+    setup_url = "https://appriseit.com/services/whatsapp/"
 
     # WhatsApp Message Notification URL
     notify_url = "https://graph.facebook.com/{fb_ver}/{phone_id}/messages"
@@ -456,7 +456,8 @@ class NotifyWhatsApp(NotifyBase):
                         )
                     )
 
-                    self.logger.debug(f"Response Details:\r\n{r.content}")
+                    self.logger.debug(
+                        "Response Details:\r\n%r", (r.content or b"")[:2000])
 
                     # Mark our failure
                     has_error = True

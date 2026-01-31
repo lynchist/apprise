@@ -77,7 +77,7 @@ class NotifyDiscord(NotifyBase):
     secure_protocol = "discord"
 
     # A URL that takes you to the setup/help of the specific protocol
-    setup_url = "https://github.com/caronc/apprise/wiki/Notify_discord"
+    setup_url = "https://appriseit.com/services/discord/"
 
     # Discord Webhook
     notify_url = "https://discord.com/api/webhooks"
@@ -604,7 +604,8 @@ class NotifyDiscord(NotifyBase):
                     )
                 )
 
-                self.logger.debug(f"Response Details:\r\n{r.content}")
+                self.logger.debug(
+                    "Response Details:\r\n%r", (r.content or b"")[:2000])
 
                 # Return; we're done
                 return False

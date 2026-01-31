@@ -77,11 +77,12 @@ notification services. It supports sending alerts to platforms such as: \
 `SMSEagle`, `SMS Manager`, `SMTP2Go`, `SparkPost`, `Splunk`, `Spike`, \
 `Spug Push`, `Super Toasty`, `Streamlabs`, `Stride`, `Synology Chat`, \
 `Syslog`, `Techulus Push`, `Telegram`, `Threema Gateway`, `Twilio`, \
-`Twitter`, `Twist`, `Vapid`, `VictorOps`, `Voipms`, `Vonage`, `WebPush`, \
-`WeCom Bot`, `WhatsApp`, `Webex Teams`, `Workflows`, `WxPusher`, and `XBMC`.}
+`Twitter`, `Twist`, `Vapid`, `Viber`, `VictorOps`, `Voipms`, `Vonage`, \
+`WebPush`, `WeCom Bot`, `WhatsApp`, `Webex Teams`, `Workflows`, `WxPusher`,
+and `XBMC`.}
 
 Name:           python-%{pypi_name}
-Version:        1.9.6
+Version:        1.9.7
 Release:        1%{?dist}
 Summary:        A simple wrapper to many popular notification services used today
 License:        BSD-2-Clause
@@ -232,6 +233,12 @@ LANG=C.UTF-8 PYTHONPATH=%{buildroot}%{python3_sitelib}:%{_builddir}/%{name}-%{ve
 %{python3_sitelib}/%{pypi_name}/__pycache__/cli*.py?
 
 %changelog
+* Tue Jan 20 2026 Chris Caron <lead2gold@gmail.com> - 1.9.7-1
+- Updated to v1.9.7
+
+* Sat Jan 17 2026 Fedora Release Engineering <releng@fedoraproject.org> - 1.9.6-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_44_Mass_Rebuild
+
 * Sun Dec  7 2025 Chris Caron <lead2gold@gmail.com> - 1.9.6-1
 - Updated to v1.9.6
 
@@ -466,7 +473,7 @@ LANG=C.UTF-8 PYTHONPATH=%{buildroot}%{python3_sitelib}:%{_builddir}/%{name}-%{ve
 * Sun Mar 10 2019 Chris Caron <lead2gold@gmail.com> - 0.7.4-1
 - Updated to v0.7.4
 - Fedora review process added a man page, spec restructuring and 2 patch files
-  to accomodate some valid points brought forth. These have already been pushed
+  to accommodate some valid points brought forth. These have already been pushed
   upstream and will be removed on the next version.
 
 * Fri Feb 22 2019 Chris Caron <lead2gold@gmail.com> - 0.7.3-1

@@ -175,6 +175,7 @@ keywords = [
     "Twist",
     "Twitter",
     "Vapid",
+    "Viber",
     "VictorOps",
     "Voipms",
     "Vonage",
@@ -231,10 +232,10 @@ windows = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/caronc/apprise"
+Homepage = "https://appriseit.com"
 Source = "https://github.com/caronc/apprise"
 Tracker = "https://github.com/caronc/apprise/issues"
-Documentation = "https://github.com/caronc/apprise/wiki"
+Documentation = "https://appriseit.com"
 
 [project.scripts]
 apprise = "apprise.cli:main"
