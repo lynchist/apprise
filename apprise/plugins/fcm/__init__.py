@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -289,7 +289,6 @@ class NotifyFCM(NotifyBase):
             self.keyfile[0].max_file_size = self.max_fcm_keyfile_size
 
         else:  # Legacy Mode
-
             # The apikey associated with the account
             self.apikey = validate_regex(apikey)
             if not self.apikey:
@@ -479,7 +478,7 @@ class NotifyFCM(NotifyBase):
                 notify_url,
                 self.verify_certificate,
             )
-            self.logger.debug("FCM %s Payload: %s", self.mode, str(payload))
+            self.logger.debug("FCM %s Payload: %s", self.mode, payload)
 
             # Always call throttle before any remote server i/o is made
             self.throttle()
@@ -511,7 +510,8 @@ class NotifyFCM(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     has_error = True
 
@@ -522,7 +522,7 @@ class NotifyFCM(NotifyBase):
                 self.logger.warning(
                     "A Connection error occurred sending FCM notification."
                 )
-                self.logger.debug("Socket Exception: %s", str(e))
+                self.logger.debug("Socket Exception: %s", e)
 
                 has_error = True
 
@@ -648,3 +648,10 @@ class NotifyFCM(NotifyBase):
         results["data_kwargs"] = results["qsd+"]
 
         return results
+
+    @staticmethod
+    def runtime_deps():
+        """Return a tuple of top-level Python package names that this plugin
+        imported as optional runtime dependencies.
+        """
+        return ("cryptography",)

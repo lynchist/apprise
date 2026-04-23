@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -49,7 +49,16 @@ class JSONPayloadField:
 
 
 # Defines the method to send the notification
-METHODS = ("POST", "GET", "DELETE", "PUT", "HEAD", "PATCH")
+METHODS = (
+    "POST",
+    "GET",
+    "DELETE",
+    "PUT",
+    "HEAD",
+    "PATCH",
+    "UPDATE",
+    "OPTIONS",
+)
 
 
 class NotifyJSON(NotifyBase):
@@ -226,15 +235,17 @@ class NotifyJSON(NotifyBase):
                     return False
 
                 try:
-                    attachments.append({
-                        "filename": (
-                            attachment.name
-                            if attachment.name
-                            else f"file{no:03}.dat"
-                        ),
-                        "base64": attachment.base64(),
-                        "mimetype": attachment.mimetype,
-                    })
+                    attachments.append(
+                        {
+                            "filename": (
+                                attachment.name
+                                if attachment.name
+                                else f"file{no:03}.dat"
+                            ),
+                            "base64": attachment.base64(),
+                            "mimetype": attachment.mimetype,
+                        }
+                    )
 
                 except exception.AppriseException:
                     # We could not access the attachment
@@ -259,7 +270,6 @@ class NotifyJSON(NotifyBase):
         }
 
         for key, value in self.payload_extras.items():
-
             if key in payload:
                 if not value:
                     # Do not store element in payload response
@@ -301,26 +311,9 @@ class NotifyJSON(NotifyBase):
         # Always call throttle before any remote server i/o is made
         self.throttle()
 
-        if self.method == "GET":
-            method = requests.get
-
-        elif self.method == "PUT":
-            method = requests.put
-
-        elif self.method == "PATCH":
-            method = requests.patch
-
-        elif self.method == "DELETE":
-            method = requests.delete
-
-        elif self.method == "HEAD":
-            method = requests.head
-
-        else:  # POST
-            method = requests.post
-
         try:
-            r = method(
+            r = requests.request(
+                self.method,
                 url,
                 data=dumps(payload),
                 params=self.params,
@@ -340,11 +333,12 @@ class NotifyJSON(NotifyBase):
                     self.method,
                     status_str,
                     ", " if status_str else "",
-                    str(r.status_code),
+                    r.status_code,
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Return; we're done
                 return False

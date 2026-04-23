@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -48,7 +48,16 @@ class XMLPayloadField:
 
 
 # Defines the method to send the notification
-METHODS = ("POST", "GET", "DELETE", "PUT", "HEAD", "PATCH")
+METHODS = (
+    "POST",
+    "GET",
+    "DELETE",
+    "PUT",
+    "HEAD",
+    "PATCH",
+    "UPDATE",
+    "OPTIONS",
+)
 
 
 class NotifyXML(NotifyBase):
@@ -283,17 +292,18 @@ class NotifyXML(NotifyBase):
                 NotifyXML.escape_html(notify_type.value, whitespace=False),
             ),
         ):
-
             if not self.payload_map[key]:
                 # Do not store element in payload response
                 continue
             payload_base[self.payload_map[key]] = value
 
         # Apply our payload extras
-        payload_base.update({
-            k: NotifyXML.escape_html(v, whitespace=False)
-            for k, v in self.payload_extras.items()
-        })
+        payload_base.update(
+            {
+                k: NotifyXML.escape_html(v, whitespace=False)
+                for k, v in self.payload_extras.items()
+            }
+        )
 
         # Base Entres
         xml_base = "".join(
@@ -388,32 +398,14 @@ class NotifyXML(NotifyBase):
                 f"XML POST URL: {url} "
                 f"(cert_verify={self.verify_certificate!r})"
             )
-            self.logger.debug(
-                "XML Payload: %s", sanitize_payload(payload))
+            self.logger.debug("XML Payload: %s", sanitize_payload(payload))
 
         # Always call throttle before any remote server i/o is made
         self.throttle()
 
-        if self.method == "GET":
-            method = requests.get
-
-        elif self.method == "PUT":
-            method = requests.put
-
-        elif self.method == "PATCH":
-            method = requests.patch
-
-        elif self.method == "DELETE":
-            method = requests.delete
-
-        elif self.method == "HEAD":
-            method = requests.head
-
-        else:  # POST
-            method = requests.post
-
         try:
-            r = method(
+            r = requests.request(
+                self.method,
                 url,
                 data=payload,
                 headers=headers,
@@ -430,11 +422,12 @@ class NotifyXML(NotifyBase):
                     self.method,
                     status_str,
                     ", " if status_str else "",
-                    str(r.status_code),
+                    r.status_code,
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Return; we're done
                 return False

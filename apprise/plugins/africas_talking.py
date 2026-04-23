@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -149,6 +149,7 @@ class NotifyAfricasTalking(NotifyBase):
             "targets": {
                 "name": _("Targets"),
                 "type": "list:string",
+                "required": True,
             },
         },
     )
@@ -157,9 +158,6 @@ class NotifyAfricasTalking(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "alias_of": "targets",
-            },
             "apikey": {
                 "alias_of": "apikey",
             },
@@ -170,16 +168,19 @@ class NotifyAfricasTalking(NotifyBase):
                 "default": "AFRICASTKNG",
                 "map_to": "sender",
             },
-            "batch": {
-                "name": _("Batch Mode"),
-                "type": "bool",
-                "default": False,
-            },
             "mode": {
                 "name": _("SMS Mode"),
                 "type": "choice:string",
                 "values": AFRICAS_TALKING_SMS_MODES,
                 "default": AFRICAS_TALKING_SMS_MODES[0],
+            },
+            "to": {
+                "alias_of": "targets",
+            },
+            "batch": {
+                "name": _("Batch Mode"),
+                "type": "bool",
+                "default": False,
             },
         },
     )
@@ -316,10 +317,11 @@ class NotifyAfricasTalking(NotifyBase):
             self.logger.debug(f"Africas Talking Payload: {payload!s}")
 
             # Printable target detail
+            _batch = self.targets[index : index + batch_size]
             p_target = (
                 self.targets[index]
                 if batch_size == 1
-                else f"{len(self.targets[index:index + batch_size])} target(s)"
+                else f"{len(_batch)} target(s)"
             )
 
             # Always call throttle before any remote server i/o is made
@@ -365,7 +367,8 @@ class NotifyAfricasTalking(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     # Mark our failure
                     has_error = True

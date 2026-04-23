@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -94,16 +94,15 @@ class NotifyEmail(NotifyBase):
     # Define object templates
     templates = (
         "{schema}://{host}",
-        "{schema}://{host}:{port}",
         "{schema}://{host}/{targets}",
-        "{schema}://{host}:{port}/{targets}",
         "{schema}://{user}@{host}",
+        "{schema}://{user}@{host}/{targets}",
         "{schema}://{user}@{host}:{port}",
         "{schema}://{user}@{host}/{targets}",
         "{schema}://{user}@{host}:{port}/{targets}",
         "{schema}://{user}:{password}@{host}",
-        "{schema}://{user}:{password}@{host}:{port}",
         "{schema}://{user}:{password}@{host}/{targets}",
+        "{schema}://{user}:{password}@{host}:{port}",
         "{schema}://{user}:{password}@{host}:{port}/{targets}",
     )
 
@@ -146,11 +145,6 @@ class NotifyEmail(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "name": _("To Email"),
-                "type": "string",
-                "map_to": "targets",
-            },
             "from": {
                 "name": _("From Email"),
                 "type": "string",
@@ -160,14 +154,6 @@ class NotifyEmail(NotifyBase):
                 "name": _("From Name"),
                 "type": "string",
                 "map_to": "from_addr",
-            },
-            "cc": {
-                "name": _("Carbon Copy"),
-                "type": "list:string",
-            },
-            "bcc": {
-                "name": _("Blind Carbon Copy"),
-                "type": "list:string",
             },
             "smtp": {
                 "name": _("SMTP Server"),
@@ -199,6 +185,19 @@ class NotifyEmail(NotifyBase):
                 # By default persistent storage is referenced
                 "default": "",
                 "map_to": "pgp_key",
+            },
+            "to": {
+                "name": _("To Email"),
+                "type": "string",
+                "map_to": "targets",
+            },
+            "cc": {
+                "name": _("Carbon Copy"),
+                "type": "list:string",
+            },
+            "bcc": {
+                "name": _("Blind Carbon Copy"),
+                "type": "list:string",
             },
         },
     )
@@ -385,10 +384,12 @@ class NotifyEmail(NotifyBase):
             for recipient in parse_emails(targets):
                 result = is_email(recipient)
                 if result:
-                    self.targets.append((
-                        result["name"] if result["name"] else False,
-                        result["full_email"],
-                    ))
+                    self.targets.append(
+                        (
+                            result["name"] if result["name"] else False,
+                            result["full_email"],
+                        )
+                    )
                     continue
 
                 self.logger.warning(
@@ -463,12 +464,15 @@ class NotifyEmail(NotifyBase):
         for i in range(len(templates.EMAIL_TEMPLATES)):  # pragma: no branch
             self.logger.trace(
                 "Scanning %s against %s",
-                from_addr, templates.EMAIL_TEMPLATES[i][0])
+                from_addr,
+                templates.EMAIL_TEMPLATES[i][0],
+            )
 
             match = templates.EMAIL_TEMPLATES[i][1].match(from_addr)
             if match:
                 self.logger.info(
-                    f"Applying {templates.EMAIL_TEMPLATES[i][0]} Defaults")
+                    f"Applying {templates.EMAIL_TEMPLATES[i][0]} Defaults"
+                )
 
                 # the secure flag can not be altered if defined in the template
                 self.secure = templates.EMAIL_TEMPLATES[i][2].get(
@@ -521,7 +525,6 @@ class NotifyEmail(NotifyBase):
                     "from_user" in templates.EMAIL_TEMPLATES[i][2]
                     and not self.from_addr[1]
                 ):
-
                     # Update our from address if defined
                     self.from_addr[1] = "{}@{}".format(
                         templates.EMAIL_TEMPLATES[i][2]["from_user"], self.host
@@ -696,39 +699,45 @@ class NotifyEmail(NotifyBase):
 
         if self.cc:
             # Handle our Carbon Copy Addresses
-            params["cc"] = ",".join([
-                formataddr(
-                    (self.names.get(e, False), e),
-                    # Swap comma for it's escaped url code (if detected) since
-                    # we're using that as a delimiter
-                    charset="utf-8",
-                ).replace(",", "%2C")
-                for e in self.cc
-            ])
+            params["cc"] = ",".join(
+                [
+                    formataddr(
+                        (self.names.get(e, False), e),
+                        # Swap comma for its escaped url code (if
+                        # detected) since we use it as a delimiter
+                        charset="utf-8",
+                    ).replace(",", "%2C")
+                    for e in self.cc
+                ]
+            )
 
         if self.bcc:
             # Handle our Blind Carbon Copy Addresses
-            params["bcc"] = ",".join([
-                formataddr(
-                    (self.names.get(e, False), e),
-                    # Swap comma for it's escaped url code (if detected) since
-                    # we're using that as a delimiter
-                    charset="utf-8",
-                ).replace(",", "%2C")
-                for e in self.bcc
-            ])
+            params["bcc"] = ",".join(
+                [
+                    formataddr(
+                        (self.names.get(e, False), e),
+                        # Swap comma for its escaped url code (if
+                        # detected) since we use it as a delimiter
+                        charset="utf-8",
+                    ).replace(",", "%2C")
+                    for e in self.bcc
+                ]
+            )
 
         if self.reply_to:
             # Handle our Reply-To Addresses
-            params["reply"] = ",".join([
-                formataddr(
-                    (self.names.get(e, False), e),
-                    # Swap comma for its escaped url code (if detected) since
-                    # we're using that as a delimiter
-                    charset="utf-8",
-                ).replace(",", "%2C")
-                for e in self.reply_to
-            ])
+            params["reply"] = ",".join(
+                [
+                    formataddr(
+                        (self.names.get(e, False), e),
+                        # Swap comma for its escaped url code (if
+                        # detected) since we use it as a delimiter
+                        charset="utf-8",
+                    ).replace(",", "%2C")
+                    for e in self.reply_to
+                ]
+            )
 
         # pull email suffix from username (if present)
         user = None if not self.user else self.user.split("@")[0]
@@ -770,15 +779,17 @@ class NotifyEmail(NotifyBase):
             targets=(
                 ""
                 if not has_targets
-                else "/".join([
-                    NotifyEmail.quote(
-                        "{}{}".format(
-                            "" if not e[0] else "{}:".format(e[0]), e[1]
-                        ),
-                        safe="",
-                    )
-                    for e in self.targets
-                ])
+                else "/".join(
+                    [
+                        NotifyEmail.quote(
+                            "{}{}".format(
+                                "" if not e[0] else "{}:".format(e[0]), e[1]
+                            ),
+                            safe="",
+                        )
+                        for e in self.targets
+                    ]
+                )
             ),
             params=NotifyEmail.urlencode(params),
         )
@@ -831,7 +842,6 @@ class NotifyEmail(NotifyBase):
         elif not is_hostname(
             results["host"], ipv4=False, ipv6=False, underscore=False
         ):
-
             if is_email(NotifyEmail.unquote(results["host"])):
                 # Don't lose defined email addresses
                 results["targets"].append(NotifyEmail.unquote(results["host"]))
@@ -1023,31 +1033,31 @@ class NotifyEmail(NotifyBase):
             to_name, to_addr = emails.pop(0)
 
             # Strip target out of cc list if in To or Bcc
-            _cc = cc - bcc - {to_addr}
+            cc_ = cc - bcc - {to_addr}
 
             # Strip target out of bcc list if in To
-            _bcc = bcc - {to_addr}
+            bcc_ = bcc - {to_addr}
 
             # Strip target out of reply_to list if in To
-            _reply_to = reply_to - {to_addr}
+            reply_to_ = reply_to - {to_addr}
 
             # Format our cc addresses to support the Name field
-            _cc = [
+            cc_ = [
                 formataddr((names.get(addr, False), addr), charset="utf-8")
-                for addr in _cc
+                for addr in cc_
             ]
 
             # Format our bcc addresses to support the Name field
-            _bcc = [
+            bcc_ = [
                 formataddr((names.get(addr, False), addr), charset="utf-8")
-                for addr in _bcc
+                for addr in bcc_
             ]
 
-            if _reply_to:
+            if reply_to_:
                 # Format our reply-to addresses to support the Name field
                 reply_to = [
                     formataddr((names.get(addr, False), addr), charset="utf-8")
-                    for addr in _reply_to
+                    for addr in reply_to_
                 ]
 
             logger.debug(
@@ -1055,12 +1065,12 @@ class NotifyEmail(NotifyBase):
             )
 
             logger.debug("Email To: {}".format(to_addr))
-            if _cc:
-                logger.debug("Email Cc: {}".format(", ".join(_cc)))
-            if _bcc:
-                logger.debug("Email Bcc: {}".format(", ".join(_bcc)))
-            if _reply_to:
-                logger.debug("Email Reply-To: {}".format(", ".join(_reply_to)))
+            if cc_:
+                logger.debug("Email Cc: {}".format(", ".join(cc_)))
+            if bcc_:
+                logger.debug("Email Bcc: {}".format(", ".join(bcc_)))
+            if reply_to_:
+                logger.debug("Email Reply-To: {}".format(", ".join(reply_to_)))
 
             # Prepare Email Message
             if notify_format == NotifyFormat.HTML:
@@ -1149,7 +1159,7 @@ class NotifyEmail(NotifyBase):
                 base.add_header(
                     "Autocrypt",
                     f"addr={formataddr((False, to_addr), charset='utf-8')}; "
-                    "prefer-encrypt=mutual"
+                    "prefer-encrypt=mutual",
                 )
 
                 # Set Encryption Info Part
@@ -1174,13 +1184,20 @@ class NotifyEmail(NotifyBase):
             base["Date"] = format_datetime(datetime.now(tz=tzinfo))
 
             if cc:
-                base["Cc"] = ",".join(_cc)
+                base["Cc"] = ",".join(cc_)
 
-            if _reply_to:
+            if reply_to_:
                 base["Reply-To"] = ",".join(reply_to)
 
             yield EmailMessage(
                 recipient=to_addr,
-                to_addrs=[to_addr, *list(_cc), *list(_bcc)],
+                to_addrs=[to_addr, *list(cc_), *list(bcc_)],
                 body=base.as_string(),
             )
+
+    @staticmethod
+    def runtime_deps():
+        """Return a tuple of top-level Python package names that this plugin
+        imported as optional runtime dependencies.
+        """
+        return ("pgpy",)

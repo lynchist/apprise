@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -113,9 +113,9 @@ def test_attach_http_query_string_dictionary():
     assert re.search(r"[?&]_var=test", obj.url())
 
 
-@mock.patch("requests.post")
+@mock.patch("requests.request")
 @mock.patch("requests.get")
-def test_attach_http(mock_get, mock_post):
+def test_attach_http(mock_get, mock_request):
     """
     API: AttachHTTP() object
 
@@ -299,8 +299,7 @@ def test_attach_http(mock_get, mock_post):
     # Because we could determine our mime type, we could build an extension
     # for our unknown filename
     assert (
-        attachment.name
-        == f"{AttachHTTP.unknown_filename}"
+        attachment.name == f"{AttachHTTP.unknown_filename}"
         f"{mimetypes.guess_extension(attachment.mimetype)}"
     )
     assert attachment
@@ -449,13 +448,13 @@ def test_attach_http(mock_get, mock_post):
 
     # Exception handling
     mock_get.return_value = None
-    for _exception in REQUEST_EXCEPTIONS:
+    for exception_ in REQUEST_EXCEPTIONS:
         aa = AppriseAttachment.instantiate(
             "http://localhost/exception.gif?cache=30"
         )
         assert isinstance(aa, AttachHTTP)
 
-        mock_get.side_effect = _exception
+        mock_get.side_effect = exception_
         assert not aa
 
     # Restore value
@@ -469,10 +468,10 @@ def test_attach_http(mock_get, mock_post):
     response = requests.Request()
     response.status_code = requests.codes.ok
     response.content = ""
-    mock_post.return_value = response
+    mock_request.return_value = response
 
     mock_get.reset_mock()
-    mock_post.reset_mock()
+    mock_request.reset_mock()
     assert mock_get.call_count == 0
 
     apobj = Apprise()
@@ -489,12 +488,12 @@ def test_attach_http(mock_get, mock_post):
     )
 
     # We posted 3 times
-    assert mock_post.call_count == 3
+    assert mock_request.call_count == 3
     # We only fetched once and re-used the same fetch for all posts
     assert mock_get.call_count == 1
 
     mock_get.reset_mock()
-    mock_post.reset_mock()
+    mock_request.reset_mock()
     apobj = Apprise()
     for n in range(10):
         assert apobj.add(f"json://localhost?:entry={n}&method=post")
@@ -510,7 +509,7 @@ def test_attach_http(mock_get, mock_post):
     )
 
     # We posted 30 times
-    assert mock_post.call_count == 30
+    assert mock_request.call_count == 30
     # We only fetched once and re-used the same fetch for all posts
     assert mock_get.call_count == 1
 
@@ -518,7 +517,7 @@ def test_attach_http(mock_get, mock_post):
     # We will test our base64 handling now
     #
     mock_get.reset_mock()
-    mock_post.reset_mock()
+    mock_request.reset_mock()
 
     AttachHTTP.max_file_size = getsize(path)
     # Set ourselves a Content-Disposition (providing a filename)

@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -115,9 +115,6 @@ class NotifyVonage(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "alias_of": "targets",
-            },
             "from": {
                 "alias_of": "from_phone",
             },
@@ -138,6 +135,9 @@ class NotifyVonage(NotifyBase):
                 "default": 900000,
                 "min": 20000,
                 "max": 604800000,
+            },
+            "to": {
+                "alias_of": "targets",
             },
         },
     )
@@ -284,7 +284,8 @@ class NotifyVonage(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     # Mark our failure
                     has_error = True

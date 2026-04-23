@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -193,6 +193,7 @@ def test_plugin_pagerduty_urls():
     # Run our general tests
     AppriseURLTester(tests=apprise_url_tests).run_all()
 
+
 @mock.patch("requests.post")
 def test_plugin_pagerduty_notify_type_is_string(mock_post):
     response = mock.Mock()
@@ -203,8 +204,10 @@ def test_plugin_pagerduty_notify_type_is_string(mock_post):
     obj = Apprise.instantiate("pagerduty://myroutekey@myapikey")
     assert isinstance(obj, NotifyPagerDuty)
 
-    assert obj.notify(
-        body="body", title="title", notify_type=NotifyType.INFO) is True
+    assert (
+        obj.notify(body="body", title="title", notify_type=NotifyType.INFO)
+        is True
+    )
     assert mock_post.call_count == 1
 
     call = mock_post.call_args_list[0]

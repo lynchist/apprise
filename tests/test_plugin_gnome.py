@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -424,8 +424,9 @@ def test_plugin_gnome_show_exception(mocker, obj):
     notification_instance = gi.repository.Notify.Notification.new.return_value
 
     # 3. Force the .show() method to raise an exception.
-    notification_instance.show.side_effect = \
-        Exception("Simulated Gnome Show Failure")
+    notification_instance.show.side_effect = Exception(
+        "Simulated Gnome Show Failure"
+    )
 
     # 4. Spy on the logger to verify the output.
     logger_spy = mocker.spy(obj, "logger")

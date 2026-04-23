@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -203,10 +203,12 @@ class NotifySMPP(NotifyBase):
             password=self.password,
             host=f"{self.host}:{self.port}" if self.port else self.host,
             source=self.source,
-            targets="/".join([
-                NotifySMPP.quote(t, safe="")
-                for t in chain(self.targets, self._invalid_targets)
-            ]),
+            targets="/".join(
+                [
+                    NotifySMPP.quote(t, safe="")
+                    for t in chain(self.targets, self._invalid_targets)
+                ]
+            ),
             params=self.urlencode(params),
         )
 
@@ -344,3 +346,10 @@ class NotifySMPP(NotifyBase):
             results["source"] = results["targets"].pop(0)
 
         return results
+
+    @staticmethod
+    def runtime_deps():
+        """Return a tuple of top-level Python package names that this plugin
+        imported as optional runtime dependencies.
+        """
+        return ("smpplib",)

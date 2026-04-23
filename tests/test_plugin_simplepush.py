@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -137,7 +137,8 @@ def test_plugin_simplepush_urls():
 
 @pytest.mark.skipif(
     "cryptography" in sys.modules,
-    reason="Requires that cryptography NOT be installed")
+    reason="Requires that cryptography NOT be installed",
+)
 def test_plugin_simpepush_cryptography_import_error():
     """
     NotifySimplePush() Cryptography loading failure
@@ -151,7 +152,8 @@ def test_plugin_simpepush_cryptography_import_error():
 
 
 @pytest.mark.skipif(
-    "cryptography" not in sys.modules, reason="Requires cryptography")
+    "cryptography" not in sys.modules, reason="Requires cryptography"
+)
 def test_plugin_simplepush_edge_cases():
     """
     NotifySimplePush() Edge Cases
@@ -182,9 +184,11 @@ def test_plugin_simplepush_general(mock_post):
 
     # Prepare a good response
     response = mock.Mock()
-    response.content = json.dumps({
-        "status": "OK",
-    })
+    response.content = json.dumps(
+        {
+            "status": "OK",
+        }
+    )
     response.status_code = requests.codes.ok
     mock_post.return_value = response
 

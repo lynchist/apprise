@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -146,7 +146,6 @@ def patch_persistent_store_namespace(tmpdir):
         ),
         mock.patch.object(asset.AppriseAsset, "storage_path", str(tmpdir)),
     ):
-
         tmp_dir = tmpdir.mkdir(PLUGIN_ID)
         # Return the directory name
         yield str(tmp_dir)
@@ -373,43 +372,53 @@ def test_plugin_vapid_subscriptions(tmpdir):
         WebPushSubscription({})
 
     with pytest.raises(exception.AppriseInvalidData):
-        WebPushSubscription({
-            "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-            "keys": {
-                "p256dh": "BNcW4oA7zq5H9TKIrA3XfKclN2fX9P_7NR=",
-                "auth": 42,
-            },
-        })
+        WebPushSubscription(
+            {
+                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
+                "keys": {
+                    "p256dh": "BNcW4oA7zq5H9TKIrA3XfKclN2fX9P_7NR=",
+                    "auth": 42,
+                },
+            }
+        )
 
     with pytest.raises(exception.AppriseInvalidData):
-        WebPushSubscription({
-            "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-            "keys": {
-                "p256dh": 42,
-                "auth": "k9Xzm43nBGo=",
-            },
-        })
+        WebPushSubscription(
+            {
+                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
+                "keys": {
+                    "p256dh": 42,
+                    "auth": "k9Xzm43nBGo=",
+                },
+            }
+        )
 
     with pytest.raises(exception.AppriseInvalidData):
-        WebPushSubscription({
-            "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-        })
+        WebPushSubscription(
+            {
+                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
+            }
+        )
 
     with pytest.raises(exception.AppriseInvalidData):
-        WebPushSubscription({
-            "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-            "keys": {},
-        })
+        WebPushSubscription(
+            {
+                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
+                "keys": {},
+            }
+        )
 
     with pytest.raises(exception.AppriseInvalidData):
         # Invalid p256dh public key provided
-        wps = WebPushSubscription({
-            "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-            "keys": {
-                "p256dh": "BNcW4oA7zq5H9TKIrA3XfKclN2fX9P_7NR=",
-                "auth": "k9Xzm43nBGo=",
-            },
-        })
+        wps = WebPushSubscription(
+            {
+                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
+                "keys": {
+                    "p256dh": "BNcW4oA7zq5H9TKIrA3XfKclN2fX9P_7NR=",
+                    "auth": "k9Xzm43nBGo=",
+                },
+            }
+        )
 
     # An empty object
     wps = WebPushSubscription()
@@ -425,16 +434,18 @@ def test_plugin_vapid_subscriptions(tmpdir):
     assert wps.write(os.path.join(str(tmpdir0), "subscriptions.json")) is False
 
     # A valid key
-    wps = WebPushSubscription({
-        "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-        "keys": {
-            "p256dh": (
-                "BI2RNIK2PkeCVoEfgVQNjievBi4gWvZxMiuCpOx6K6qCO"
-                "5caru5QCPuc-nEaLplbbFkHxTrR9YzE8ZkTjie5Fq0"
-            ),
-            "auth": "k9Xzm43nBGo=",
-        },
-    })
+    wps = WebPushSubscription(
+        {
+            "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
+            "keys": {
+                "p256dh": (
+                    "BI2RNIK2PkeCVoEfgVQNjievBi4gWvZxMiuCpOx6K6qCO"
+                    "5caru5QCPuc-nEaLplbbFkHxTrR9YzE8ZkTjie5Fq0"
+                ),
+                "auth": "k9Xzm43nBGo=",
+            },
+        }
+    )
 
     assert bool(wps) is True
     assert isinstance(wps.json(), str)
@@ -443,8 +454,7 @@ def test_plugin_vapid_subscriptions(tmpdir):
     assert wps.auth == "k9Xzm43nBGo="
     assert wps.endpoint == "https://fcm.googleapis.com/fcm/send/abc123"
     assert (
-        wps.p256dh
-        == "BI2RNIK2PkeCVoEfgVQNjievBi4gWvZxMiuCpOx6K6qCO"
+        wps.p256dh == "BI2RNIK2PkeCVoEfgVQNjievBi4gWvZxMiuCpOx6K6qCO"
         "5caru5QCPuc-nEaLplbbFkHxTrR9YzE8ZkTjie5Fq0"
     )
     assert wps.public_key is not None
@@ -470,16 +480,18 @@ def test_plugin_vapid_subscriptions_without_c():
     """NotifyVapid() Subscriptions (no Cryptography)"""
     with pytest.raises(exception.AppriseInvalidData):
         # A valid key that can't be loaded because crytography is missing
-        WebPushSubscription({
-            "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
-            "keys": {
-                "p256dh": (
-                    "BI2RNIK2PkeCVoEfgVQNjievBi4gWvZxMiuCpOx6K6qCO"
-                    "5caru5QCPuc-nEaLplbbFkHxTrR9YzE8ZkTjie5Fq0"
-                ),
-                "auth": "k9Xzm43nBGo=",
-            },
-        })
+        WebPushSubscription(
+            {
+                "endpoint": "https://fcm.googleapis.com/fcm/send/abc123",
+                "keys": {
+                    "p256dh": (
+                        "BI2RNIK2PkeCVoEfgVQNjievBi4gWvZxMiuCpOx6K6qCO"
+                        "5caru5QCPuc-nEaLplbbFkHxTrR9YzE8ZkTjie5Fq0"
+                    ),
+                    "auth": "k9Xzm43nBGo=",
+                },
+            }
+        )
 
 
 @pytest.mark.skipif(
@@ -642,7 +654,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
     assert os.listdir(str(tmpdir0)) == ["subscriptions.json"]
     assert isinstance(smgr.json(), str)
 
-    _asset = asset.AppriseAsset(
+    asset_ = asset.AppriseAsset(
         storage_mode=PersistentStoreMode.FLUSH,
         storage_path=str(tmpdir0),
         # Auto-gen our private/public key pair
@@ -656,7 +668,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
             "abc123",
         ],
         subfile=subfile,
-        asset=_asset,
+        asset=asset_,
     )
     assert isinstance(obj, NotifyVapid)
     # Our subscription directory + our
@@ -670,7 +682,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
             "abc123",
         ],
         subfile=subfile,
-        asset=_asset,
+        asset=asset_,
     )
     assert isinstance(obj, NotifyVapid)
     assert isinstance(obj.url(), str)
@@ -684,7 +696,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
             "abc123",
         ],
         subfile="/a/bad/path",
-        asset=_asset,
+        asset=asset_,
     )
     assert isinstance(obj, NotifyVapid)
     assert isinstance(obj.url(), str)
@@ -709,7 +721,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
         ],
         keyfile=keyfile,
         subfile=subfile,
-        asset=_asset,
+        asset=asset_,
     )
     assert isinstance(obj, NotifyVapid)
     assert isinstance(obj.url(), str)
@@ -725,7 +737,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
         ],
         keyfile=subfile,
         subfile=subfile,
-        asset=_asset,
+        asset=asset_,
     )
     assert isinstance(obj, NotifyVapid)
     assert isinstance(obj.url(), str)
@@ -735,7 +747,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
 
     # AutoGen Temporary directory
     tmpdir1 = tmpdir.mkdir("tmp01")
-    _asset2 = asset.AppriseAsset(
+    asset2 = asset.AppriseAsset(
         storage_mode=PersistentStoreMode.FLUSH,
         storage_path=str(tmpdir1),
         # Auto-gen our private/public key pair
@@ -749,7 +761,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
             "abc123",
         ],
         keyfile=keyfile,
-        asset=_asset2,
+        asset=asset2,
     )
     assert isinstance(obj, NotifyVapid)
     assert isinstance(obj.url(), str)
@@ -763,7 +775,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
 
     # AutoGen Temporary directory
     tmpdir2 = tmpdir.mkdir("tmp02")
-    _asset3 = asset.AppriseAsset(
+    asset3 = asset.AppriseAsset(
         storage_mode=PersistentStoreMode.FLUSH,
         storage_path=str(tmpdir2),
         # Auto-gen our private/public key pair
@@ -779,7 +791,7 @@ def test_plugin_vapid_initializations(mock_post, tmpdir):
         ],
         keyfile="invalid-file",
         subfile=subfile,
-        asset=_asset3,
+        asset=asset3,
     )
     assert isinstance(obj, NotifyVapid)
     assert isinstance(obj.url(), str)
@@ -811,7 +823,7 @@ def test_plugin_vapid_initializations_without_c(tmpdir):
     }
     subfile = os.path.join(str(tmpdir0), "subscriptions.json")
     assert smgr.add(sub) is False
-    _asset = asset.AppriseAsset(
+    asset_ = asset.AppriseAsset(
         storage_mode=PersistentStoreMode.FLUSH,
         storage_path=str(tmpdir0),
         # Auto-gen our private/public key pair
@@ -825,6 +837,6 @@ def test_plugin_vapid_initializations_without_c(tmpdir):
             "abc123",
         ],
         subfile=subfile,
-        asset=_asset,
+        asset=asset_,
     )
     assert isinstance(obj, NotifyVapid)

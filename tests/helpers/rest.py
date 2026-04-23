@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -51,7 +51,6 @@ logging.disable(logging.CRITICAL)
 
 
 class AppriseURLTester:
-
     # Some exception handling we'll use
     req_exceptions = (
         requests.ConnectionError(0, "requests.ConnectionError() not handled"),
@@ -86,10 +85,12 @@ class AppriseURLTester:
         self.body = "".join(
             choice(str_alpha + str_num + " ") for _ in range(self.body_len)
         )
-        self.body = "\r\n".join([
-            self.body[i : i + self.row]
-            for i in range(0, len(self.body), self.row)
-        ])
+        self.body = "\r\n".join(
+            [
+                self.body[i : i + self.row]
+                for i in range(0, len(self.body), self.row)
+            ]
+        )
 
         # Create our title using random data
         self.title = "".join(
@@ -101,10 +102,12 @@ class AppriseURLTester:
 
     def add(self, url, meta):
         """Adds a test suite to our object."""
-        self.__tests.append({
-            "url": url,
-            "meta": meta,
-        })
+        self.__tests.append(
+            {
+                "url": url,
+                "meta": meta,
+            }
+        )
 
     def run_all(self, tmpdir=None):
         """Run all of our tests."""
@@ -128,7 +131,7 @@ class AppriseURLTester:
         instance = meta.get("instance")
 
         # Our expected server objects
-        _self = meta.get("self")
+        self_ = meta.get("self")
 
         # Our expected privacy url
         # Don't set this if don't need to check it's value
@@ -257,7 +260,7 @@ class AppriseURLTester:
             ):
                 raise AssertionError(
                     f"URL: {url} Privacy URL:"
-                    f" '{obj.url(privacy=True)[:len(privacy_url)]}' !="
+                    f" '{obj.url(privacy=True)[: len(privacy_url)]}' !="
                     f" expected '{privacy_url}'"
                 )
 
@@ -306,10 +309,10 @@ class AppriseURLTester:
             del obj_cmp
             del instance
 
-        if _self:
+        if self_:
             # Iterate over our expected entries inside of our
             # object
-            for key, val in _self.items():
+            for key, val in self_.items():
                 # Test that our object has the desired key
                 assert hasattr(obj, key) is True
                 assert getattr(obj, key) == val
@@ -456,18 +459,18 @@ class AppriseURLTester:
 
         try:
             if test_requests_exceptions is False:
-
                 # Verify we can acquire a target count as an integer
                 targets = len(obj)
 
                 # check that we're as expected
-                _resp = obj.notify(
+                resp = obj.notify(
                     body=self.body, title=self.title, notify_type=notify_type
                 )
-                if _resp != notify_response:
+                if resp != notify_response:
                     raise AssertionError(
-                        f"notify() call; notify_response={_resp} "
-                        f"(expected {notify_response}) on {url}")
+                        f"notify() call; notify_response={resp} "
+                        f"(expected {notify_response}) on {url}"
+                    )
 
                 if notify_response:
                     # If we successfully got a response, there must have been
@@ -602,11 +605,19 @@ class AppriseURLTester:
                     )
 
                     # Same results should apply to a list of attachments
-                    attach = AppriseAttachment((
-                        os.path.join(self.__test_var_dir, "apprise-test.gif"),
-                        os.path.join(self.__test_var_dir, "apprise-test.png"),
-                        os.path.join(self.__test_var_dir, "apprise-test.jpeg"),
-                    ))
+                    attach = AppriseAttachment(
+                        (
+                            os.path.join(
+                                self.__test_var_dir, "apprise-test.gif"
+                            ),
+                            os.path.join(
+                                self.__test_var_dir, "apprise-test.png"
+                            ),
+                            os.path.join(
+                                self.__test_var_dir, "apprise-test.jpeg"
+                            ),
+                        )
+                    )
 
                     assert (
                         obj.notify(
@@ -685,15 +696,14 @@ class AppriseURLTester:
                             is False
                         )
             else:
-
-                for _exception in self.req_exceptions:
-                    mock_post.side_effect = _exception
-                    mock_head.side_effect = _exception
-                    mock_del.side_effect = _exception
-                    mock_put.side_effect = _exception
-                    mock_get.side_effect = _exception
-                    mock_patch.side_effect = _exception
-                    mock_request.side_effect = _exception
+                for exception in self.req_exceptions:
+                    mock_post.side_effect = exception
+                    mock_head.side_effect = exception
+                    mock_del.side_effect = exception
+                    mock_put.side_effect = exception
+                    mock_get.side_effect = exception
+                    mock_patch.side_effect = exception
+                    mock_request.side_effect = exception
 
                     try:
                         assert (
@@ -738,14 +748,14 @@ class AppriseURLTester:
                 )
 
             else:
-                for _exception in self.req_exceptions:
-                    mock_post.side_effect = _exception
-                    mock_del.side_effect = _exception
-                    mock_put.side_effect = _exception
-                    mock_head.side_effect = _exception
-                    mock_get.side_effect = _exception
-                    mock_patch.side_effect = _exception
-                    mock_request.side_effect = _exception
+                for exception in self.req_exceptions:
+                    mock_post.side_effect = exception
+                    mock_del.side_effect = exception
+                    mock_put.side_effect = exception
+                    mock_head.side_effect = exception
+                    mock_get.side_effect = exception
+                    mock_patch.side_effect = exception
+                    mock_request.side_effect = exception
 
                     try:
                         assert (

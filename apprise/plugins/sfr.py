@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -240,12 +240,14 @@ class NotifySFR(NotifyBase):
         targets = list(self.targets)
 
         # Construct the authentication JSON
-        auth_payload = json.dumps({
-            "serviceId": self.user,
-            "servicePassword": self.password,
-            "spaceId": self.space_id,
-            "lang": self.lang,
-        })
+        auth_payload = json.dumps(
+            {
+                "serviceId": self.user,
+                "servicePassword": self.password,
+                "spaceId": self.space_id,
+                "lang": self.lang,
+            }
+        )
 
         base_payload = {
             # Can be 'SMS', 'SMSLong', 'SMSUnicode', or 'SMSUnicodeLong'
@@ -323,7 +325,8 @@ class NotifySFR(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     # Mark our failure
                     has_error = True

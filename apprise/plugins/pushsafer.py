@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -611,14 +611,16 @@ class NotifyPushSafer(NotifyBase):
                 try:
                     # Output must be in a DataURL format (that's what
                     # PushSafer calls it):
-                    attachments.append((
+                    attachments.append(
                         (
-                            attachment.name
-                            if attachment.name
-                            else f"file{no:03}.dat"
-                        ),
-                        f"data:{attachment.mimetype};base64,{attachment.base64()}",
-                    ))
+                            (
+                                attachment.name
+                                if attachment.name
+                                else f"file{no:03}.dat"
+                            ),
+                            f"data:{attachment.mimetype};base64,{attachment.base64()}",
+                        )
+                    )
 
                 except exception.AppriseException:
                     # We could not access the attachment
@@ -670,7 +672,7 @@ class NotifyPushSafer(NotifyBase):
 
             else:
                 # Create a copy of our payload object
-                _payload = payload.copy()
+                payload_ = payload.copy()
 
                 for idx in range(0, len(attachments), len(PICTURE_PARAMETER)):
                     # Send our attachments to our same user (already prepared
@@ -678,16 +680,15 @@ class NotifyPushSafer(NotifyBase):
                     for c, attachment in enumerate(
                         attachments[idx : idx + len(PICTURE_PARAMETER)]
                     ):
-
                         # Get our attachment information
                         filename, dataurl = attachment
-                        _payload.update({PICTURE_PARAMETER[c]: dataurl})
+                        payload_.update({PICTURE_PARAMETER[c]: dataurl})
 
                         self.logger.debug(
                             f'Added attachment ({filename}) to "{recipient}".'
                         )
 
-                    okay, _response = self._send(_payload)
+                    okay, _response = self._send(payload_)
                     if not okay:
                         has_error = True
                         continue
@@ -699,9 +700,9 @@ class NotifyPushSafer(NotifyBase):
 
                     # More then the maximum messages shouldn't cause all of
                     # the text to loop on future iterations
-                    _payload = payload.copy()
-                    _payload["t"] = ""
-                    _payload["m"] = "..."
+                    payload_ = payload.copy()
+                    payload_["t"] = ""
+                    payload_["m"] = "..."
 
         return not has_error
 
@@ -730,7 +731,8 @@ class NotifyPushSafer(NotifyBase):
                 f" {notify_url} (cert_verify={self.verify_certificate!r})"
             )
             self.logger.debug(
-                "PushSafer Payload: %s", sanitize_payload(payload))
+                "PushSafer Payload: %s", sanitize_payload(payload)
+            )
 
         # Always call throttle before any remote server i/o is made
         self.throttle()
@@ -739,8 +741,8 @@ class NotifyPushSafer(NotifyBase):
         response = None
 
         # Initialize our Pushsafer expected responses
-        _code = None
-        _str = "Unknown"
+        code = None
+        str_ = "Unknown"
 
         try:
             # Open our attachment path if required:
@@ -754,11 +756,11 @@ class NotifyPushSafer(NotifyBase):
 
             try:
                 response = loads(r.content)
-                _code = response.get("status")
-                _str = (
-                    response.get("success", _str)
-                    if _code == 1
-                    else response.get("error", _str)
+                code = response.get("status")
+                str_ = (
+                    response.get("success", str_)
+                    if code == 1
+                    else response.get("error", str_)
                 )
 
             except (AttributeError, TypeError, ValueError):
@@ -786,16 +788,17 @@ class NotifyPushSafer(NotifyBase):
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 return False, response
 
-            elif _code != 1:
+            elif code != 1:
                 # It's a bit backwards, but:
                 #    1 is returned if we succeed
                 #    0 is returned if we fail
                 self.logger.warning(
-                    f"Failed to deliver payload to PushSafer; error={_str}."
+                    f"Failed to deliver payload to PushSafer; error={str_}."
                 )
 
                 self.logger.debug(f"Response Details:\r\n{r.content}")

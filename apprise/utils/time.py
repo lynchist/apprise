@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -47,7 +47,14 @@ def zoneinfo(name: str) -> Optional[ZoneInfo]:
 
     # Windows-safe: accept UTC family even without tzdata
     if raw.lower() in {
-            "utc", "z", "gmt", "etc/utc", "etc/gmt", "gmt0", "utc0"}:
+        "utc",
+        "z",
+        "gmt",
+        "etc/utc",
+        "etc/gmt",
+        "gmt0",
+        "utc0",
+    }:
         return _tz.utc
 
     # Try exact match first
@@ -59,6 +66,7 @@ def zoneinfo(name: str) -> Optional[ZoneInfo]:
 
     # Try case-insensitive match across available keys
     from zoneinfo import available_timezones
+
     lowered = name.lower().strip()
     for zone in available_timezones():
         full_zone = zone.lower()
@@ -66,7 +74,6 @@ def zoneinfo(name: str) -> Optional[ZoneInfo]:
             return ZoneInfo(zone)
 
         with contextlib.suppress(IndexError):
-
             # Break our zones and enforce limit
             zones = full_zone.split("/")[1:3]
 

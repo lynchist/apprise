@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -81,8 +81,7 @@ apprise_url_tests = (
         },
     ),
     (
-        ("brevo://abcd:user@example.com/newuser@example.com"
-         "?reply=%20!"),
+        ("brevo://abcd:user@example.com/newuser@example.com?reply=%20!"),
         {
             # An invalid Reply-To address
             "instance": TypeError,
@@ -97,8 +96,10 @@ apprise_url_tests = (
         },
     ),
     (
-        ("brevo://abcd:user@example.com/newuser@example.com"
-         "?reply=user@example.ca"),
+        (
+            "brevo://abcd:user@example.com/newuser@example.com"
+            "?reply=user@example.ca"
+        ),
         {
             # A good email
             "instance": NotifyBrevo,

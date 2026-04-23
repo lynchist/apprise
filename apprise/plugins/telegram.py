@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -603,7 +603,9 @@ class NotifyTelegram(NotifyBase):
             payload["message_thread_id"] = topic
 
         try:
-            with open(path, "rb") as f:
+            with (
+                attach if isinstance(attach, AttachBase) else open(path, "rb")
+            ) as f:
                 # Configure file payload (for upload)
                 files = {key: (file_name, f)}
 
@@ -637,7 +639,8 @@ class NotifyTelegram(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     return False
 
@@ -767,14 +770,14 @@ class NotifyTelegram(NotifyBase):
         if response.get("ok", False):
             for entry in response.get("result", []):
                 if "message" in entry and "from" in entry["message"]:
-                    _id = entry["message"]["from"].get("id", 0)
-                    _user = entry["message"]["from"].get("first_name")
+                    id_ = entry["message"]["from"].get("id", 0)
+                    user = entry["message"]["from"].get("first_name")
                     self.logger.info(
-                        "Detected Telegram user %s (userid=%d)", _user, _id
+                        "Detected Telegram user %s (userid=%d)", user, id_
                     )
                     # Return our detected userid
-                    self.store.set("bot_owner", _id)
-                    return _id
+                    self.store.set("bot_owner", id_)
+                    return id_
 
         self.logger.warning(
             "Failed to detect a Telegram user; "
@@ -794,10 +797,10 @@ class NotifyTelegram(NotifyBase):
         """Perform Telegram Notification."""
 
         if len(self.targets) == 0 and self.detect_owner:
-            _id = self.store.get("bot_owner") or self.detect_bot_owner()
-            if _id:
+            id_ = self.store.get("bot_owner") or self.detect_bot_owner()
+            if id_:
                 # Permanently store our id in our target list for next time
-                self.targets.append((str(_id), self.topic))
+                self.targets.append((str(id_), self.topic))
                 self.logger.info(
                     "Update your Telegram Apprise URL to read: "
                     f"{self.url(privacy=True)}"
@@ -817,7 +820,7 @@ class NotifyTelegram(NotifyBase):
 
         url = "{}{}/{}".format(self.notify_url, self.bot_token, "sendMessage")
 
-        _payload = {
+        payload_ = {
             # Notification Audible Control
             "disable_notification": self.silent,
             # Display Web Page Preview (if possible)
@@ -826,7 +829,6 @@ class NotifyTelegram(NotifyBase):
 
         # Prepare Message Body
         if self.notify_format == NotifyFormat.MARKDOWN:
-
             if (
                 body_format not in (None, NotifyFormat.MARKDOWN)
                 and self.markdown_ver == TelegramMarkdownVersion.TWO
@@ -838,15 +840,13 @@ class NotifyTelegram(NotifyBase):
                 # Also: https://core.telegram.org/bots/api#markdownv2-style
                 body = re.sub(r"(?<!\\)([_*[\]()~`>#+=|{}.!-])", r"\\\1", body)
 
-            _payload["parse_mode"] = self.markdown_ver
-            _payload["text"] = body
+            payload_["parse_mode"] = self.markdown_ver
+            payload_["text"] = body
 
         else:  # HTML
-
             # Use Telegram's HTML mode
-            _payload["parse_mode"] = "HTML"
+            payload_["parse_mode"] = "HTML"
             for r, v, m in self.__telegram_escape_html_entries:
-
                 if "html" in m:
                     # Handle special cases where we need to alter new lines
                     # for presentation purposes
@@ -860,20 +860,20 @@ class NotifyTelegram(NotifyBase):
                 body = r.sub(v, body)
 
             # Prepare our payload based on HTML or TEXT
-            _payload["text"] = body
+            payload_["text"] = body
 
         # Prepare our caption payload
         caption_payload = (
             {
-                "caption": _payload["text"],
+                "caption": payload_["text"],
                 "show_caption_above_media": (
                     self.content == TelegramContentPlacement.BEFORE
                 ),
-                "parse_mode": _payload["parse_mode"],
+                "parse_mode": payload_["parse_mode"],
             }
             if attach
             and body
-            and len(_payload.get("text", "")) < self.telegram_caption_maxlen
+            and len(payload_.get("text", "")) < self.telegram_caption_maxlen
             else {}
         )
 
@@ -893,7 +893,7 @@ class NotifyTelegram(NotifyBase):
             # Printable chat_id details
             pchat_id = f"{chat_id}" if not topic else f"{chat_id}:{topic}"
 
-            payload = _payload.copy()
+            payload = payload_.copy()
             payload["chat_id"] = chat_id
             if topic:
                 payload["message_thread_id"] = topic
@@ -919,7 +919,6 @@ class NotifyTelegram(NotifyBase):
                     payload=caption_payload,
                     attach=attach,
                 ):
-
                     has_error = True
                     continue
 
@@ -1019,16 +1018,19 @@ class NotifyTelegram(NotifyBase):
         # Send our attachments now (if specified and if it exists)
         for no, attachment in enumerate(attach, start=1):
             payload = payload if payload and no == 1 else {}
-            payload.update({
-                "title": (
-                    attachment.name if attachment.name else f"file{no:03}.dat"
-                )
-            })
+            payload.update(
+                {
+                    "title": (
+                        attachment.name
+                        if attachment.name
+                        else f"file{no:03}.dat"
+                    )
+                }
+            )
 
             if not self.send_media(
                 target, notify_type, payload=payload, attach=attachment
             ):
-
                 # We failed; don't continue
                 has_error = True
                 break
@@ -1066,18 +1068,20 @@ class NotifyTelegram(NotifyBase):
         params.update(self.url_parameters(privacy=privacy, *args, **kwargs))
 
         targets = []
-        for chat_id, _topic in self.targets:
-            topic = _topic if _topic else self.topic
+        for chat_id, topic_ in self.targets:
+            topic = topic_ if topic_ else self.topic
 
             targets.append(
-                "".join([
-                    (
-                        NotifyTelegram.quote(f"{chat_id}", safe="@")
-                        if isinstance(chat_id, str)
-                        else f"{chat_id}"
-                    ),
-                    "" if not topic else f":{topic}",
-                ])
+                "".join(
+                    [
+                        (
+                            NotifyTelegram.quote(f"{chat_id}", safe="@")
+                            if isinstance(chat_id, str)
+                            else f"{chat_id}"
+                        ),
+                        "" if not topic else f":{topic}",
+                    ]
+                )
             )
 
         # No need to check the user token because the user automatically gets

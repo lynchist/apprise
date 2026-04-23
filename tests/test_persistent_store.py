@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -74,9 +74,7 @@ def test_persistent_storage_bad_mode(tmpdir):
     """Persistent Storage Bad Mode Testing."""
     # Create ourselves an attachment object set in Memory Mode only
     with pytest.raises(AttributeError):
-        PersistentStore(
-            namespace="abc", path=str(tmpdir), mode="invalid"
-        )
+        PersistentStore(namespace="abc", path=str(tmpdir), mode="invalid")
 
     with pytest.raises(AttributeError):
         AppriseAsset(storage_mode="invalid")
@@ -425,7 +423,7 @@ def test_persistent_storage_flush_mode(tmpdir):
     assert pc.read("foobar") is None
 
     # Set our max_file_size
-    _prev_max_file_size = pc.max_file_size
+    prev_max_file_size = pc.max_file_size
     pc.max_file_size = 1
     assert pc.delete()
 
@@ -433,7 +431,7 @@ def test_persistent_storage_flush_mode(tmpdir):
     assert pc.read() is None
 
     # Restore setting
-    pc.max_file_size = _prev_max_file_size
+    pc.max_file_size = prev_max_file_size
 
     # Reset
     pc.delete()
@@ -1270,11 +1268,13 @@ def test_persistent_storage_cache_object(tmpdir):
 
     # object type is not supported
     assert (
-        CacheObject.instantiate({
-            "v": 123,
-            "x": (datetime.now() - EPOCH).total_seconds(),
-            "c": object,
-        })
+        CacheObject.instantiate(
+            {
+                "v": 123,
+                "x": (datetime.now() - EPOCH).total_seconds(),
+                "c": object,
+            }
+        )
         is None
     )
 

@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -58,9 +58,7 @@ def assert_body(
     trims away. Returns the updated offset.
     """
     segment = source[offset : offset + len(chunk_body)]
-    ws_diff = len(segment) - len(
-        segment.lstrip("\r\n\x0b\x0c").rstrip()
-    )
+    ws_diff = len(segment) - len(segment.lstrip("\r\n\x0b\x0c").rstrip())
 
     assert (
         source[offset : offset + len(chunk_body) + ws_diff]
@@ -103,7 +101,6 @@ def test_notify_overflow_truncate_with_amalgamation():
     # First Test: Truncated Title
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 10
 
@@ -144,7 +141,6 @@ def test_notify_overflow_truncate_with_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 5
 
@@ -180,7 +176,6 @@ def test_notify_overflow_truncate_with_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -215,7 +210,6 @@ def test_notify_overflow_truncate_with_amalgamation():
     assert title[: obj.body_maxlen] == chunks[0].get("title")
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -253,7 +247,6 @@ def test_notify_overflow_truncate_with_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Enforce no title
         title_maxlen = 0
 
@@ -339,7 +332,6 @@ def test_notify_overflow_truncate_no_amalgamation():
     # First Test: Truncated Title
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 10
 
@@ -380,7 +372,6 @@ def test_notify_overflow_truncate_no_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 5
 
@@ -416,7 +407,6 @@ def test_notify_overflow_truncate_no_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -450,7 +440,6 @@ def test_notify_overflow_truncate_no_amalgamation():
     assert title == chunks[0].get("title")
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -490,7 +479,6 @@ def test_notify_overflow_truncate_no_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Enforce no title
         title_maxlen = 0
 
@@ -577,7 +565,6 @@ def test_notify_overflow_split_with_amalgamation():
     # First Test: Truncated Title
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 10
 
@@ -610,7 +597,6 @@ def test_notify_overflow_split_with_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 5
 
@@ -646,7 +632,6 @@ def test_notify_overflow_split_with_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -727,7 +712,6 @@ def test_notify_overflow_split_with_amalgamation():
     # Test forcing overflow_display_title_once
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -781,7 +765,6 @@ def test_notify_overflow_split_with_amalgamation():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -854,7 +837,6 @@ def test_notify_overflow_split_with_amalgamation():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -908,7 +890,6 @@ def test_notify_overflow_split_with_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Enforce no title
         title_maxlen = 0
 
@@ -973,7 +954,6 @@ def test_notify_overflow_split_with_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -1022,7 +1002,6 @@ def test_notify_overflow_split_with_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -1106,7 +1085,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_always():
     # First Test: Truncated Title
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 10
 
@@ -1142,7 +1120,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 5
 
@@ -1181,7 +1158,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -1265,7 +1241,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_always():
     # Test forcing overflow_display_title_once
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -1319,7 +1294,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_always():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -1395,7 +1369,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_always():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -1506,7 +1479,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Enforce no title
         title_maxlen = 0
 
@@ -1574,7 +1546,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -1626,7 +1597,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -1717,7 +1687,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_once():
     # First Test: Truncated Title
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 10
 
@@ -1753,7 +1722,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 5
 
@@ -1792,7 +1760,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -1881,7 +1848,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_once():
     # Test forcing overflow_display_title_once
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -1935,7 +1901,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_once():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -2018,7 +1983,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_once():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -2075,7 +2039,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Enforce no title
         title_maxlen = 0
 
@@ -2143,7 +2106,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -2201,7 +2163,6 @@ def test_notify_overflow_split_with_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -2288,7 +2249,6 @@ def test_notify_overflow_split_no_amalgamation():
     # First Test: Truncated Title
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 10
 
@@ -2321,7 +2281,6 @@ def test_notify_overflow_split_no_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 5
 
@@ -2357,7 +2316,6 @@ def test_notify_overflow_split_no_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -2430,7 +2388,6 @@ def test_notify_overflow_split_no_amalgamation():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -2502,7 +2459,6 @@ def test_notify_overflow_split_no_amalgamation():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -2554,7 +2510,6 @@ def test_notify_overflow_split_no_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Enforce no title
         title_maxlen = 0
 
@@ -2619,7 +2574,6 @@ def test_notify_overflow_split_no_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -2668,7 +2622,6 @@ def test_notify_overflow_split_no_amalgamation():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -2745,7 +2698,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_always():
     # First Test: Truncated Title
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 10
 
@@ -2781,7 +2733,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 5
 
@@ -2820,7 +2771,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -2896,7 +2846,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_always():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -2971,7 +2920,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_always():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -3026,7 +2974,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Enforce no title
         title_maxlen = 0
 
@@ -3094,7 +3041,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -3146,7 +3092,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_always():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -3226,7 +3171,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_once():
     # First Test: Truncated Title
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 10
 
@@ -3262,7 +3206,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 5
 
@@ -3301,7 +3244,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -3390,7 +3332,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_once():
     # Test forcing overflow_display_title_once
     #
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = title_len
 
@@ -3443,7 +3384,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_once():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -3531,7 +3471,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_once():
     # Test larger messages
     # and that the body remains untouched
     class TestNotification(NotifyBase):
-
         # Test title max length
         title_maxlen = 150
 
@@ -3587,7 +3526,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Enforce no title
         title_maxlen = 0
 
@@ -3655,7 +3593,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -3715,7 +3652,6 @@ def test_notify_overflow_split_no_amalgamation_force_title_once():
     #
 
     class TestNotification(NotifyBase):
-
         # Set a small title length
         title_maxlen = 100
 
@@ -3784,7 +3720,6 @@ def test_notify_markdown_general():
     # First Test: Truncated Title
     #
     class TestMarkdownNotification(NotifyBase):
-
         # Force our title to wrap
         title_maxlen = 0
 
@@ -3828,8 +3763,8 @@ def test_notify_markdown_general():
     assert chunks[0].get("title") == ""
 
 
-@mock.patch("requests.post")
-def test_notify_emoji_general(mock_post):
+@mock.patch("requests.request")
+def test_notify_emoji_general(mock_request):
     """
     API: Emoji General Testing
 
@@ -3840,7 +3775,7 @@ def test_notify_emoji_general(mock_post):
     response.status_code = requests.codes.ok
 
     # Prepare Mock
-    mock_post.return_value = response
+    mock_request.return_value = response
 
     # Set up our emojis
     title = ":smile:"
@@ -3859,16 +3794,17 @@ def test_notify_emoji_general(mock_post):
     assert len(ap_obj) == 1
 
     assert ap_obj.notify(title=title, body=body) is True
-    assert mock_post.call_count == 1
+    assert mock_request.call_count == 1
 
-    details = mock_post.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "POST"
     dataset = json.loads(details[1]["data"])
 
     # No changes
     assert dataset["title"] == title
     assert dataset["message"] == body
 
-    mock_post.reset_mock()
+    mock_request.reset_mock()
 
     #
     # Test URL over-ride while default value set in asset
@@ -3880,16 +3816,17 @@ def test_notify_emoji_general(mock_post):
     assert len(ap_obj) == 1
 
     assert ap_obj.notify(title=title, body=body) is True
-    assert mock_post.call_count == 1
+    assert mock_request.call_count == 1
 
-    details = mock_post.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "POST"
     dataset = json.loads(details[1]["data"])
 
     # No changes
     assert dataset["title"] == title
     assert dataset["message"] == body
 
-    mock_post.reset_mock()
+    mock_request.reset_mock()
 
     #
     # Test URL over-ride while default value set in asset pt 2
@@ -3901,16 +3838,17 @@ def test_notify_emoji_general(mock_post):
     assert len(ap_obj) == 1
 
     assert ap_obj.notify(title=title, body=body) is True
-    assert mock_post.call_count == 1
+    assert mock_request.call_count == 1
 
-    details = mock_post.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "POST"
     dataset = json.loads(details[1]["data"])
 
     # Emoji's are displayed
     assert dataset["title"] == "😄"
     assert dataset["message"] == "😃"
 
-    mock_post.reset_mock()
+    mock_request.reset_mock()
 
     #
     # Test URL over-ride while default value set in asset pt 2
@@ -3922,16 +3860,17 @@ def test_notify_emoji_general(mock_post):
     assert len(ap_obj) == 1
 
     assert ap_obj.notify(title=title, body=body) is True
-    assert mock_post.call_count == 1
+    assert mock_request.call_count == 1
 
-    details = mock_post.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "POST"
     dataset = json.loads(details[1]["data"])
 
     # No changes
     assert dataset["title"] == title
     assert dataset["message"] == body
 
-    mock_post.reset_mock()
+    mock_request.reset_mock()
 
     #
     # Test Default Emoji settings
@@ -3948,16 +3887,17 @@ def test_notify_emoji_general(mock_post):
     assert len(ap_obj) == 1
 
     assert ap_obj.notify(title=title, body=body) is True
-    assert mock_post.call_count == 1
+    assert mock_request.call_count == 1
 
-    details = mock_post.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "POST"
     dataset = json.loads(details[1]["data"])
 
     # emoji's are displayed
     assert dataset["title"] == "😄"
     assert dataset["message"] == "😃"
 
-    mock_post.reset_mock()
+    mock_request.reset_mock()
 
     #
     # With Emoji's turned on by default, the user can optionally turn them
@@ -3971,16 +3911,17 @@ def test_notify_emoji_general(mock_post):
     assert len(ap_obj) == 1
 
     assert ap_obj.notify(title=title, body=body) is True
-    assert mock_post.call_count == 1
+    assert mock_request.call_count == 1
 
-    details = mock_post.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "POST"
     dataset = json.loads(details[1]["data"])
 
     # No changes
     assert dataset["title"] == title
     assert dataset["message"] == body
 
-    mock_post.reset_mock()
+    mock_request.reset_mock()
 
     #
     # With Emoji's turned on by default, there is no change when emojis
@@ -3994,16 +3935,17 @@ def test_notify_emoji_general(mock_post):
     assert len(ap_obj) == 1
 
     assert ap_obj.notify(title=title, body=body) is True
-    assert mock_post.call_count == 1
+    assert mock_request.call_count == 1
 
-    details = mock_post.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "POST"
     dataset = json.loads(details[1]["data"])
 
     # emoji's are displayed
     assert dataset["title"] == "😄"
     assert dataset["message"] == "😃"
 
-    mock_post.reset_mock()
+    mock_request.reset_mock()
 
     #
     # Enforce the disabling of emojis
@@ -4020,16 +3962,17 @@ def test_notify_emoji_general(mock_post):
     assert len(ap_obj) == 1
 
     assert ap_obj.notify(title=title, body=body) is True
-    assert mock_post.call_count == 1
+    assert mock_request.call_count == 1
 
-    details = mock_post.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "POST"
     dataset = json.loads(details[1]["data"])
 
     # Disabled - no emojis
     assert dataset["title"] == title
     assert dataset["message"] == body
 
-    mock_post.reset_mock()
+    mock_request.reset_mock()
 
     #
     # Enforce the disabling of emojis
@@ -4046,13 +3989,14 @@ def test_notify_emoji_general(mock_post):
     assert len(ap_obj) == 1
 
     assert ap_obj.notify(title=title, body=body) is True
-    assert mock_post.call_count == 1
+    assert mock_request.call_count == 1
 
-    details = mock_post.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "POST"
     dataset = json.loads(details[1]["data"])
 
     # Disabled - no emojis
     assert dataset["title"] == title
     assert dataset["message"] == body
 
-    mock_post.reset_mock()
+    mock_request.reset_mock()

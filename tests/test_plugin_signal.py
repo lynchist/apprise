@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -125,11 +125,11 @@ apprise_url_tests = (
         },
     ),
     (
-    "signals://localhost/{}/{}?format=markdown".format("1" * 11, "3" * 11),
-    {
-        # Test our markdown flag
-        "instance": NotifySignalAPI,
-    },
+        "signals://localhost/{}/{}?format=markdown".format("1" * 11, "3" * 11),
+        {
+            # Test our markdown flag
+            "instance": NotifySignalAPI,
+        },
     ),
     (
         "signal://localhost:8080/+{}/group.abcd/".format("1" * 11),
@@ -287,12 +287,14 @@ def test_plugin_signal_yaml_config(request_mock):
     """NotifySignalAPI() YAML Configuration."""
 
     # Load our configuration
-    result, _ = ConfigBase.config_parse_yaml(cleandoc("""
+    result, _ = ConfigBase.config_parse_yaml(
+        cleandoc("""
     urls:
       - signal://signal:8080/+1234567890:
          - to: +0987654321
            tag: signal
-    """))
+    """)
+    )
 
     # Verify we loaded correctly
     assert isinstance(result, list)
@@ -311,11 +313,13 @@ def test_plugin_signal_yaml_config(request_mock):
     #
 
     # Load our configuration
-    result, _config = ConfigBase.config_parse_yaml(cleandoc("""
+    result, _config = ConfigBase.config_parse_yaml(
+        cleandoc("""
     urls:
       - signal://signal:8080/+1234567890/+0987654321:
          - tag: signal
-    """))
+    """)
+    )
 
     # Verify we loaded correctly
     assert isinstance(result, list)
@@ -494,6 +498,7 @@ def test_notify_signal_plugin_attachments(request_mock):
     )
     assert request_mock.call_count == 1
 
+
 def test_plugin_signal_text_mode_markdown_from_url(request_mock):
     """NotifySignalAPI() sets text_mode=styled when ?format=markdown"""
     source = "+1 (555) 123-3456"
@@ -504,7 +509,8 @@ def test_plugin_signal_text_mode_markdown_from_url(request_mock):
     aobj = Apprise()
     # Use URL path tokens, add the markdown format via query string
     assert aobj.add(
-        f"signals://localhost:231/{source}/{target}?format=markdown")
+        f"signals://localhost:231/{source}/{target}?format=markdown"
+    )
     assert aobj.notify(title=title, body=body)
 
     assert request_mock.call_count == 1

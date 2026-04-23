@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -170,7 +170,7 @@ class NotifySlack(NotifyBase):
     templates = (
         # Webhook
         "{schema}://{token_a}/{token_b}/{token_c}",
-        "{schema}://{botname}@{token_a}/{token_b}{token_c}",
+        "{schema}://{botname}@{token_a}/{token_b}/{token_c}",
         "{schema}://{token_a}/{token_b}/{token_c}/{targets}",
         "{schema}://{botname}@{token_a}/{token_b}/{token_c}/{targets}",
         # Bot
@@ -195,7 +195,7 @@ class NotifySlack(NotifyBase):
                 "type": "string",
                 "private": True,
                 "required": True,
-                "regex": (r"^xox[abp]-[A-Z0-9-]+$", "i"),
+                "regex": (r"^(?:xoxe\.)?xox[abp]-[A-Z0-9-]+$", "i"),
             },
             # Token required as part of the Webhook request
             #  /AAAAAAAAA/........./........................
@@ -203,6 +203,7 @@ class NotifySlack(NotifyBase):
                 "name": _("Token A"),
                 "type": "string",
                 "private": True,
+                "required": True,
                 "regex": (r"^[A-Z0-9]+$", "i"),
             },
             # Token required as part of the Webhook request
@@ -211,6 +212,7 @@ class NotifySlack(NotifyBase):
                 "name": _("Token B"),
                 "type": "string",
                 "private": True,
+                "required": True,
                 "regex": (r"^[A-Z0-9]+$", "i"),
             },
             # Token required as part of the Webhook request
@@ -219,6 +221,7 @@ class NotifySlack(NotifyBase):
                 "name": _("Token C"),
                 "type": "string",
                 "private": True,
+                "required": True,
                 "regex": (r"^[A-Za-z0-9]+$", "i"),
             },
             "target_encoded_id": {
@@ -275,9 +278,6 @@ class NotifySlack(NotifyBase):
                 "default": False,
                 "map_to": "use_blocks",
             },
-            "to": {
-                "alias_of": "targets",
-            },
             "timestamp": {
                 "name": _("Include Timestamp"),
                 "type": "bool",
@@ -293,6 +293,9 @@ class NotifySlack(NotifyBase):
             "token": {
                 "name": _("Token"),
                 "alias_of": ("access_token", "token_a", "token_b", "token_c"),
+            },
+            "to": {
+                "alias_of": "targets",
             },
         },
     )
@@ -360,9 +363,7 @@ class NotifySlack(NotifyBase):
                 (a for a in SLACK_MODES if a.startswith(mode)), None
             )
             if self.mode not in SLACK_MODES:
-                msg = (
-                    f"The Slack mode specified ({mode}) is invalid."
-                )
+                msg = f"The Slack mode specified ({mode}) is invalid."
                 self.logger.warning(msg)
                 raise TypeError(msg)
 
@@ -447,20 +448,25 @@ class NotifySlack(NotifyBase):
             re.IGNORECASE,
         )
         # Place a thumbnail image inline with the message body
-        self.include_image = \
-            self.template_args["image"]["default"] \
-            if include_image is None else include_image
+        self.include_image = (
+            self.template_args["image"]["default"]
+            if include_image is None
+            else include_image
+        )
 
         # Place a footer with each post
-        self.include_footer = \
-            self.template_args["footer"]["default"] \
-            if include_footer is None else include_footer
+        self.include_footer = (
+            self.template_args["footer"]["default"]
+            if include_footer is None
+            else include_footer
+        )
 
         # timestamp inclusion (only applicable if footer also defined
-        self.include_timestamp = \
-            self.template_args["timestamp"]["default"] \
-            if include_timestamp is None \
+        self.include_timestamp = (
+            self.template_args["timestamp"]["default"]
+            if include_timestamp is None
             else include_timestamp
+        )
 
         return
 
@@ -482,7 +488,7 @@ class NotifySlack(NotifyBase):
         #
         if self.use_blocks:
             # Our slack format
-            _slack_format = (
+            slack_format = (
                 "mrkdwn"
                 if self.notify_format == NotifyFormat.MARKDOWN
                 else "plain_text"
@@ -490,13 +496,17 @@ class NotifySlack(NotifyBase):
 
             payload = {
                 "username": self.user if self.user else self.app_id,
-                "attachments": [{
-                    "blocks": [{
-                        "type": "section",
-                        "text": {"type": _slack_format, "text": body},
-                    }],
-                    "color": self.color(notify_type),
-                }],
+                "attachments": [
+                    {
+                        "blocks": [
+                            {
+                                "type": "section",
+                                "text": {"type": slack_format, "text": body},
+                            }
+                        ],
+                        "color": self.color(notify_type),
+                    }
+                ],
             }
 
             # Slack only accepts non-empty header sections
@@ -515,7 +525,6 @@ class NotifySlack(NotifyBase):
 
             # Include the footer only if specified to do so
             if self.include_footer:
-
                 # Acquire our to-be footer icon if configured to do so
                 image_url = (
                     None
@@ -524,15 +533,15 @@ class NotifySlack(NotifyBase):
                 )
 
                 # Prepare our footer based on the block structure
-                _footer = {
+                footer = {
                     "type": "context",
-                    "elements": [{"type": _slack_format, "text": self.app_id}],
+                    "elements": [{"type": slack_format, "text": self.app_id}],
                 }
 
                 if image_url:
                     payload["icon_url"] = image_url
 
-                    _footer["elements"].insert(
+                    footer["elements"].insert(
                         0,
                         {
                             "type": "image",
@@ -541,7 +550,7 @@ class NotifySlack(NotifyBase):
                         },
                     )
 
-                payload["attachments"][0]["blocks"].append(_footer)
+                payload["attachments"][0]["blocks"].append(footer)
 
         else:
             #
@@ -607,11 +616,13 @@ class NotifySlack(NotifyBase):
                 "username": self.user if self.user else self.app_id,
                 # Use Markdown language
                 "mrkdwn": self.notify_format == NotifyFormat.MARKDOWN,
-                "attachments": [{
-                    "title": title,
-                    "text": body,
-                    "color": self.color(notify_type),
-                }],
+                "attachments": [
+                    {
+                        "title": title,
+                        "text": body,
+                        "color": self.color(notify_type),
+                    }
+                ],
             }
 
             # Acquire our to-be footer icon if configured to do so
@@ -693,8 +704,9 @@ class NotifySlack(NotifyBase):
                         continue
 
                     # Store oure content
-                    channel, thread_ts = result.group("channel"), result.group(
-                        "thread_ts"
+                    channel, thread_ts = (
+                        result.group("channel"),
+                        result.group("thread_ts"),
                     )
                     if thread_ts:
                         payload["thread_ts"] = thread_ts
@@ -744,7 +756,6 @@ class NotifySlack(NotifyBase):
         ):
             # Send our attachments (can only be done in bot mode)
             for no, attachment in enumerate(attach, start=1):
-
                 # Perform some simple error checking
                 if not attachment:
                     # We could not access the attachment
@@ -760,7 +771,7 @@ class NotifySlack(NotifyBase):
 
                 # Get the URL to which to upload the file.
                 # https://api.slack.com/methods/files.getUploadURLExternal
-                _params = {
+                params = {
                     "filename": (
                         attachment.name
                         if attachment.name
@@ -768,9 +779,9 @@ class NotifySlack(NotifyBase):
                     ),
                     "length": len(attachment),
                 }
-                _url = self.api_url.format("files.getUploadURLExternal")
+                url_ = self.api_url.format("files.getUploadURLExternal")
                 response = self._send(
-                    _url, {}, http_method="get", params=_params
+                    url_, {}, http_method="get", params=params
                 )
                 if not (
                     response
@@ -790,15 +801,17 @@ class NotifySlack(NotifyBase):
                 # Send file to channels
                 # https://api.slack.com/methods/files.completeUploadExternal
                 for channel_id in attach_channel_list:
-                    _payload = {
-                        "files": [{
-                            "id": file_id,
-                            "title": attachment.name,
-                        }],
+                    payload_ = {
+                        "files": [
+                            {
+                                "id": file_id,
+                                "title": attachment.name,
+                            }
+                        ],
                         "channel_id": channel_id,
                     }
-                    _url = self.api_url.format("files.completeUploadExternal")
-                    response = self._send(_url, _payload)
+                    url_ = self.api_url.format("files.completeUploadExternal")
+                    response = self._send(url_, payload_)
                     # Expected response
                     # {
                     #     "ok": true,
@@ -888,7 +901,6 @@ class NotifySlack(NotifyBase):
             if r.status_code != requests.codes.ok or not (
                 response and response.get("ok", False)
             ):
-
                 # We had a problem
                 status_str = NotifySlack.http_response_code_lookup(
                     r.status_code, SLACK_HTTP_ERROR_MAP
@@ -901,7 +913,8 @@ class NotifySlack(NotifyBase):
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Return; we're done
                 return False
@@ -1017,10 +1030,11 @@ class NotifySlack(NotifyBase):
                     "file": (
                         attach.name,
                         # file handle is safely closed in `finally`; inline
-                        # open is intentional
-                        open(attach.path, "rb"),  # noqa: SIM115
-                        ),
-                    }
+                        # open is intentional; attach.open() dispatches to
+                        # BytesIO for memory attachments
+                        attach.open(),
+                    ),
+                }
 
             r = requests.request(
                 http_method,
@@ -1280,23 +1294,28 @@ class NotifySlack(NotifyBase):
             )
 
         # Get Image Flag
-        results["include_image"] = \
-            parse_bool(results["qsd"].get(
-                "image", NotifySlack.template_args["image"]["default"]))
+        results["include_image"] = parse_bool(
+            results["qsd"].get(
+                "image", NotifySlack.template_args["image"]["default"]
+            )
+        )
 
-        results["include_timestamp"] = \
-            parse_bool(results["qsd"].get(
-                "timestamp",
-                NotifySlack.template_args["timestamp"]["default"]))
+        results["include_timestamp"] = parse_bool(
+            results["qsd"].get(
+                "timestamp", NotifySlack.template_args["timestamp"]["default"]
+            )
+        )
 
         # Get Payload structure (use blocks?)
         if "blocks" in results["qsd"] and len(results["qsd"]["blocks"]):
             results["use_blocks"] = parse_bool(results["qsd"]["blocks"])
 
         # Get Footer Flag
-        results["include_footer"] = \
-            parse_bool(results["qsd"].get(
-                "footer", NotifySlack.template_args["footer"]["default"]))
+        results["include_footer"] = parse_bool(
+            results["qsd"].get(
+                "footer", NotifySlack.template_args["footer"]["default"]
+            )
+        )
 
         # Get Mode
         if "mode" in results["qsd"] and len(results["qsd"]["mode"]):
@@ -1324,15 +1343,14 @@ class NotifySlack(NotifyBase):
 
         if result:
             params = (
-                ""
-                if not result.group("params")
-                else result.group("params")
+                "" if not result.group("params") else result.group("params")
             )
 
             if result.group("gov"):
                 # provide gov parameters
-                params = ("?" if not params else "&") + \
-                    f"mode={SlackMode.WEBHOOK_GOV}"
+                params = (
+                    "?" if not params else "&"
+                ) + f"mode={SlackMode.WEBHOOK_GOV}"
 
             return NotifySlack.parse_url(
                 "{schema}://{token_a}/{token_b}/{token_c}/{params}".format(

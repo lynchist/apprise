@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -155,6 +155,12 @@ class NotifyOffice365(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
+            "oauth_id": {
+                "alias_of": "client_id",
+            },
+            "oauth_secret": {
+                "alias_of": "secret",
+            },
             "to": {
                 "alias_of": "targets",
             },
@@ -165,12 +171,6 @@ class NotifyOffice365(NotifyBase):
             "bcc": {
                 "name": _("Blind Carbon Copy"),
                 "type": "list:string",
-            },
-            "oauth_id": {
-                "alias_of": "client_id",
-            },
-            "oauth_secret": {
-                "alias_of": "secret",
             },
         },
     )
@@ -241,10 +241,12 @@ class NotifyOffice365(NotifyBase):
                 result = is_email(recipient)
                 if result:
                     # Add our email to our target list
-                    self.targets.append((
-                        result["name"] if result["name"] else False,
-                        result["full_email"],
-                    ))
+                    self.targets.append(
+                        (
+                            result["name"] if result["name"] else False,
+                            result["full_email"],
+                        )
+                    )
                     continue
 
                 self.logger.warning(
@@ -389,14 +391,16 @@ class NotifyOffice365(NotifyBase):
 
         if self.from_email:
             # Apply from email if it is known
-            payload["message"].update({
-                "from": {
-                    "emailAddress": {
-                        "address": self.from_email,
-                        "name": self.from_name or self.app_id,
-                    }
-                },
-            })
+            payload["message"].update(
+                {
+                    "from": {
+                        "emailAddress": {
+                            "address": self.from_email,
+                            "name": self.from_name or self.app_id,
+                        }
+                    },
+                }
+            )
 
         # Create a copy of the email list
         emails = list(self.targets)
@@ -427,31 +431,35 @@ class NotifyOffice365(NotifyBase):
                 if len(attachment) > self.outlook_attachment_inline_max:
                     # Messages larger then xMB need to be uploaded after; a
                     # draft email must be prepared; below is our session
-                    large_attachments.append({
-                        "obj": attachment,
-                        "name": (
-                            attachment.name
-                            if attachment.name
-                            else f"file{no:03}.dat"
-                        ),
-                    })
+                    large_attachments.append(
+                        {
+                            "obj": attachment,
+                            "name": (
+                                attachment.name
+                                if attachment.name
+                                else f"file{no:03}.dat"
+                            ),
+                        }
+                    )
                     continue
 
                 try:
                     # Prepare our Attachment in Base64
-                    small_attachments.append({
-                        "@odata.type": "#microsoft.graph.fileAttachment",
-                        # Name of the attachment (as it should appear in email)
-                        "name": (
-                            attachment.name
-                            if attachment.name
-                            else f"file{no:03}.dat"
-                        ),
-                        # MIME type of the attachment
-                        "contentType": "attachment.mimetype",
-                        # Base64 Content
-                        "contentBytes": attachment.base64(),
-                    })
+                    small_attachments.append(
+                        {
+                            "@odata.type": "#microsoft.graph.fileAttachment",
+                            # Name of attachment (as it appears in email)
+                            "name": (
+                                attachment.name
+                                if attachment.name
+                                else f"file{no:03}.dat"
+                            ),
+                            # MIME type of the attachment
+                            "contentType": "attachment.mimetype",
+                            # Base64 Content
+                            "contentBytes": attachment.base64(),
+                        }
+                    )
 
                 except exception.AppriseException:
                     # We could not access the attachment
@@ -507,29 +515,31 @@ class NotifyOffice365(NotifyBase):
                 # Prepare our CC list
                 payload["message"]["ccRecipients"] = []
                 for addr in cc:
-                    _payload = {"address": addr}
+                    payload_ = {"address": addr}
                     if self.names.get(addr):
-                        _payload["name"] = self.names[addr]
+                        payload_["name"] = self.names[addr]
 
                     # Store our address in our payload
                     payload["message"]["ccRecipients"].append(
-                        {"emailAddress": _payload}
+                        {"emailAddress": payload_}
                     )
 
                 self.logger.debug(
                     "{}Email Cc: {}".format(
                         "Draft" if large_attachments else "",
-                        ", ".join([
-                            "{}{}".format(
-                                (
-                                    ""
-                                    if self.names.get(e)
-                                    else f"{self.names[e]}: "
-                                ),
-                                e,
-                            )
-                            for e in cc
-                        ]),
+                        ", ".join(
+                            [
+                                "{}{}".format(
+                                    (
+                                        ""
+                                        if self.names.get(e)
+                                        else f"{self.names[e]}: "
+                                    ),
+                                    e,
+                                )
+                                for e in cc
+                            ]
+                        ),
                     )
                 )
 
@@ -537,29 +547,31 @@ class NotifyOffice365(NotifyBase):
                 # Prepare our CC list
                 payload["message"]["bccRecipients"] = []
                 for addr in bcc:
-                    _payload = {"address": addr}
+                    payload_ = {"address": addr}
                     if self.names.get(addr):
-                        _payload["name"] = self.names[addr]
+                        payload_["name"] = self.names[addr]
 
                     # Store our address in our payload
                     payload["message"]["bccRecipients"].append(
-                        {"emailAddress": _payload}
+                        {"emailAddress": payload_}
                     )
 
                 self.logger.debug(
                     "{}Email Bcc: {}".format(
                         "Draft" if large_attachments else "",
-                        ", ".join([
-                            "{}{}".format(
-                                (
-                                    ""
-                                    if self.names.get(e)
-                                    else f"{self.names[e]}: "
-                                ),
-                                e,
-                            )
-                            for e in bcc
-                        ]),
+                        ", ".join(
+                            [
+                                "{}{}".format(
+                                    (
+                                        ""
+                                        if self.names.get(e)
+                                        else f"{self.names[e]}: "
+                                    ),
+                                    e,
+                                )
+                                for e in bcc
+                            ]
+                        ),
                     )
                 )
 
@@ -825,7 +837,8 @@ class NotifyOffice365(NotifyBase):
                 method,
             )
             self.logger.debug(
-                "Office 365 Payload: %s", sanitize_payload(payload))
+                "Office 365 Payload: %s", sanitize_payload(payload)
+            )
 
         # Always call throttle before any remote server i/o is made
         self.throttle()
@@ -855,7 +868,6 @@ class NotifyOffice365(NotifyBase):
                 requests.codes.created,
                 requests.codes.accepted,
             ):
-
                 # We had a problem
                 status_str = NotifyOffice365.http_response_code_lookup(
                     r.status_code
@@ -911,7 +923,8 @@ class NotifyOffice365(NotifyBase):
                 # }
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Mark our failure
                 return (False, content)
@@ -960,21 +973,25 @@ class NotifyOffice365(NotifyBase):
 
         if self.cc:
             # Handle our Carbon Copy Addresses
-            params["cc"] = ",".join([
-                "{}{}".format(
-                    "" if not self.names.get(e) else f"{self.names[e]}:", e
-                )
-                for e in self.cc
-            ])
+            params["cc"] = ",".join(
+                [
+                    "{}{}".format(
+                        "" if not self.names.get(e) else f"{self.names[e]}:", e
+                    )
+                    for e in self.cc
+                ]
+            )
 
         if self.bcc:
             # Handle our Blind Carbon Copy Addresses
-            params["bcc"] = ",".join([
-                "{}{}".format(
-                    "" if not self.names.get(e) else f"{self.names[e]}:", e
-                )
-                for e in self.bcc
-            ])
+            params["bcc"] = ",".join(
+                [
+                    "{}{}".format(
+                        "" if not self.names.get(e) else f"{self.names[e]}:", e
+                    )
+                    for e in self.bcc
+                ]
+            )
 
         return (
             "{schema}://{source}/{tenant}/{client_id}/{secret}"
@@ -988,13 +1005,17 @@ class NotifyOffice365(NotifyBase):
                 secret=self.pprint(
                     self.secret, privacy, mode=PrivacyMode.Secret, safe=""
                 ),
-                targets="/".join([
-                    NotifyOffice365.quote(
-                        "{}{}".format("" if not e[0] else f"{e[0]}:", e[1]),
-                        safe="@",
-                    )
-                    for e in self.targets
-                ]),
+                targets="/".join(
+                    [
+                        NotifyOffice365.quote(
+                            "{}{}".format(
+                                "" if not e[0] else f"{e[0]}:", e[1]
+                            ),
+                            safe="@",
+                        )
+                        for e in self.targets
+                    ]
+                ),
                 params=NotifyOffice365.urlencode(params),
             )
         )

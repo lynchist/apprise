@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -134,6 +134,69 @@ apprise_url_tests = (
         {
             "instance": NotifyPushover,
             # Notify will return False since there is a bad device in our list
+            "response": False,
+        },
+    ),
+    # API Key + Valid User + 1 Group key (percent-encoded)
+    (
+        "pover://{}@{}/%23{}".format("u" * 30, "a" * 30, "g" * 30),
+        {
+            "instance": NotifyPushover,
+        },
+    ),
+    # API Key + Valid User + 1 Group key (literal #)
+    (
+        "pover://{}@{}/#{}/".format("u" * 30, "a" * 30, "g" * 30),
+        {
+            "instance": NotifyPushover,
+        },
+    ),
+    # API Key + Valid User + Group key (via to= percent-encoded)
+    (
+        "pover://{}@{}?to=%23{}".format("u" * 30, "a" * 30, "g" * 30),
+        {
+            "instance": NotifyPushover,
+        },
+    ),
+    # API Key + Valid User + 2 Group keys (percent-encoded)
+    (
+        "pover://{}@{}/%23{}/%23{}".format(
+            "u" * 30, "a" * 30, "g" * 30, "h" * 30
+        ),
+        {
+            "instance": NotifyPushover,
+        },
+    ),
+    # API Key + Valid User + 2 Group keys (literal #)
+    (
+        "pover://{}@{}/#{}/#{}/".format(
+            "u" * 30, "a" * 30, "g" * 30, "h" * 30
+        ),
+        {
+            "instance": NotifyPushover,
+        },
+    ),
+    # API Key + Valid User + 1 Device + 1 Group key (percent-encoded)
+    (
+        "pover://{}@{}/DEVICE/%23{}".format("u" * 30, "a" * 30, "g" * 30),
+        {
+            "instance": NotifyPushover,
+        },
+    ),
+    # API Key + Valid User + 1 Device + 1 Group key (literal #)
+    (
+        "pover://{}@{}/DEVICE/#{}".format("u" * 30, "a" * 30, "g" * 30),
+        {
+            "instance": NotifyPushover,
+        },
+    ),
+    # API Key + Valid User + invalid group (contains invalid chars)
+    (
+        "pover://{}@{}/%23invalid-group/".format("u" * 30, "a" * 30),
+        {
+            "instance": NotifyPushover,
+            # Notify will return False since the group key is invalid
+            # (contains a dash which is not alphanumeric)
             "response": False,
         },
     ),
@@ -421,8 +484,9 @@ def test_plugin_pushover_edge_cases(mock_post):
 
     obj = NotifyPushover(user_key=user_key, token=token, targets=devices)
     assert isinstance(obj, NotifyPushover)
-    # Our invalid device is ignored
-    assert len(obj.targets) == 2
+    # Our invalid device is ignored; 2 valid devices remain
+    assert len(obj.devices) == 2
+    assert len(obj.groups) == 0
 
     # We notify the 2 devices loaded
     assert (
@@ -434,9 +498,10 @@ def test_plugin_pushover_edge_cases(mock_post):
 
     obj = NotifyPushover(user_key=user_key, token=token)
     assert isinstance(obj, NotifyPushover)
-    # Default is to send to all devices, so there will be a
-    # device defined here
-    assert len(obj.targets) == 1
+    # Default is to send to all devices (sentinel placed in devices list)
+    assert len(obj.devices) == 1
+    assert len(obj.groups) == 0
+    assert len(obj) == 1
 
     # This call succeeds because all of the devices are valid
     assert (
@@ -448,9 +513,50 @@ def test_plugin_pushover_edge_cases(mock_post):
 
     obj = NotifyPushover(user_key=user_key, token=token, targets=set())
     assert isinstance(obj, NotifyPushover)
-    # Default is to send to all devices, so there will be a
-    # device defined here
-    assert len(obj.targets) == 1
+    # Default is to send to all devices (sentinel placed in devices list)
+    assert len(obj.devices) == 1
+    assert len(obj.groups) == 0
+    assert len(obj) == 1
+
+    # Group targets
+    group_key = "g" * 30
+    obj = NotifyPushover(
+        user_key=user_key, token=token, targets=f"#{group_key}"
+    )
+    assert isinstance(obj, NotifyPushover)
+    assert len(obj.devices) == 0
+    assert len(obj.groups) == 1
+    assert obj.groups[0] == group_key
+    assert len(obj) == 1
+
+    # Verify notification to a group succeeds (separate API call per group)
+    assert (
+        obj.notify(
+            body="body", title="title", notify_type=apprise.NotifyType.INFO
+        )
+        is True
+    )
+
+    # Mix of device and group → 2 HTTP calls (1 device batch + 1 group)
+    obj = NotifyPushover(
+        user_key=user_key, token=token, targets=["device1", f"#{group_key}"]
+    )
+    assert isinstance(obj, NotifyPushover)
+    assert len(obj.devices) == 1
+    assert len(obj.groups) == 1
+    assert len(obj) == 2
+
+    # Invalid group key (contains dash — not alphanumeric)
+    obj = NotifyPushover(
+        user_key=user_key, token=token, targets="#invalid-group"
+    )
+    assert isinstance(obj, NotifyPushover)
+    # Invalid target is rejected; both lists empty → send() returns False
+    assert len(obj.devices) == 0
+    assert len(obj.groups) == 0
+
+    # Always 1 is returned as minimum
+    assert len(obj) == 1
 
     # No User Key specified
     with pytest.raises(TypeError):
@@ -538,3 +644,113 @@ def test_plugin_pushover_config_files(mock_post):
 
     # Notify everything loaded
     assert aobj.notify(title="title", body="body") is True
+
+
+@mock.patch("requests.post")
+def test_plugin_pushover_group_request_exception(mock_post):
+    """NotifyPushover() group RequestException must not raise KeyError."""
+    user_key = "u" * 30
+    token = "a" * 30
+    group_key = "g" * 30
+
+    mock_post.side_effect = requests.RequestException("connection error")
+
+    obj = NotifyPushover(
+        user_key=user_key, token=token, targets=f"#{group_key}"
+    )
+    assert isinstance(obj, NotifyPushover)
+    assert len(obj.groups) == 1
+    assert len(obj.devices) == 0
+
+    # Must return False cleanly -- no KeyError from payload["device"]
+    assert obj.send(body="test") is False
+
+
+@mock.patch("requests.post")
+def test_plugin_pushover_url_roundtrip(mock_post):
+    """NotifyPushover() url() must preserve sound, url, and url_title."""
+    from apprise.plugins.pushover import NotifyPushover
+
+    user_key = "u" * 30
+    token = "a" * 30
+
+    mock_post.return_value = mock.Mock()
+    mock_post.return_value.status_code = requests.codes.ok
+
+    # Instantiate with all three round-trip fields set
+    obj = NotifyPushover(
+        user_key=user_key,
+        token=token,
+        sound="bike",
+        supplemental_url="https://example.com",
+        supplemental_url_title="Click Here",
+    )
+    assert isinstance(obj, NotifyPushover)
+    assert obj.sound == "bike"
+    assert obj.supplemental_url == "https://example.com"
+    assert obj.supplemental_url_title == "Click Here"
+
+    # Round-trip via url() -> parse_url() -> re-instantiate
+    generated_url = obj.url()
+    assert "sound=bike" in generated_url
+    assert "url=" in generated_url
+    assert "url_title=" in generated_url
+
+    parsed = NotifyPushover.parse_url(generated_url)
+    assert parsed is not None
+    assert parsed["sound"] == "bike"
+    assert parsed["supplemental_url"] == "https://example.com"
+    assert parsed["supplemental_url_title"] == "Click Here"
+
+    obj2 = NotifyPushover(**parsed)
+    assert obj2.sound == "bike"
+    assert obj2.supplemental_url == "https://example.com"
+    assert obj2.supplemental_url_title == "Click Here"
+
+
+def test_plugin_pushover_parse_url_title_unquote():
+    """NotifyPushover() parse_url() unquote url_title like other fields."""
+    user_key = "u" * 30
+    token = "a" * 30
+
+    # url_title with percent-encoded spaces and special chars
+    url = "pover://{}@{}/?url_title=Hello%20World".format(user_key, token)
+    parsed = NotifyPushover.parse_url(url)
+    assert parsed is not None
+    # Must be decoded, not raw percent-encoded
+    assert parsed["supplemental_url_title"] == "Hello World"
+
+    # Spacing is fine too
+    url = "pover://{}@{}/?url_title=Hello World".format(user_key, token)
+    parsed = NotifyPushover.parse_url(url)
+    assert parsed is not None
+    # Must be decoded, not raw percent-encoded
+    assert parsed["supplemental_url_title"] == "Hello World"
+
+
+@mock.patch("requests.post")
+def test_plugin_pushover_attach_memory(mock_post):
+    """Regression: AttachMemory must be sendable without OSError."""
+    from apprise.attachment.memory import AttachMemory
+
+    user_key = "u" * 30
+    api_token = "a" * 30
+
+    response = mock.Mock()
+    response.content = dumps(
+        {"status": 1, "request": "647d2300-702c-4b38-8b2f-d56326ae460b"}
+    )
+    response.status_code = requests.codes.ok
+    mock_post.return_value = response
+
+    obj = apprise.Apprise.instantiate(f"pover://{user_key}@{api_token}/")
+    assert isinstance(obj, NotifyPushover)
+
+    mem = AttachMemory(
+        content=b"<html><body><h1>Test</h1></body></html>",
+        name="report.html",
+        mimetype="text/html",
+    )
+
+    assert obj.notify(body="Test", attach=mem) is True
+    assert mock_post.call_count == 1

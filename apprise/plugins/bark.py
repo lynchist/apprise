@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,7 +32,7 @@ import json
 
 import requests
 
-from ..common import NotifyImageSize, NotifyType
+from ..common import NotifyFormat, NotifyImageSize, NotifyType
 from ..locale import gettext_lazy as _
 from ..url import PrivacyMode
 from ..utils.parse import parse_bool, parse_list
@@ -167,9 +167,6 @@ class NotifyBark(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "alias_of": "targets",
-            },
             "sound": {
                 "name": _("Sound"),
                 "type": "choice:string",
@@ -217,6 +214,9 @@ class NotifyBark(NotifyBase):
                 "name": _("Call"),
                 "type": "bool",
                 "default": False,
+            },
+            "to": {
+                "alias_of": "targets",
             },
         },
     )
@@ -351,6 +351,7 @@ class NotifyBark(NotifyBase):
         # Prepare our payload (sample below)
         # {
         #     "body": "Test Bark Server",
+        #     "markdown": "# Markdown Content",
         #     "device_key": "nysrshcqielvoxsa",
         #     "title": "bleem",
         #     "category": "category",
@@ -358,12 +359,19 @@ class NotifyBark(NotifyBase):
         #     "badge": 1,
         #     "icon": "https://day.app/assets/images/avatar.jpg",
         #     "group": "test",
+        #     "level": "active",
+        #     "volume": 5,
+        #     "call": 1,
         #     "url": "https://mritd.com"
         # }
         payload = {
             "title": title if title else self.app_desc,
-            "body": body,
         }
+
+        if self.notify_format == NotifyFormat.MARKDOWN:
+            payload["markdown"] = body
+        else:
+            payload["body"] = body
 
         # Acquire our image url if configured to do so
         image_url = (
@@ -446,7 +454,8 @@ class NotifyBark(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     # Mark our failure
                     has_error = True
@@ -625,8 +634,6 @@ class NotifyBark(NotifyBase):
             )
 
         # Call
-        results["call"] = parse_bool(
-            results["qsd"].get("call", False)
-        )
+        results["call"] = parse_bool(results["qsd"].get("call", False))
 
         return results

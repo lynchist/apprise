@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -214,33 +214,31 @@ class NotifyPushed(NotifyBase):
         users = list(self.users)
 
         # Copy our payload
-        _payload = dict(payload)
-        _payload["target_type"] = "channel"
+        payload_ = dict(payload)
+        payload_["target_type"] = "channel"
 
         while len(channels) > 0:
             # Get Channel
-            _payload["target_alias"] = channels.pop(0)
+            payload_["target_alias"] = channels.pop(0)
 
             if not self._send(
-                payload=_payload, notify_type=notify_type, **kwargs
+                payload=payload_, notify_type=notify_type, **kwargs
             ):
-
                 # toggle flag
                 has_error = True
 
         # Copy our payload
-        _payload = dict(payload)
-        _payload["target_type"] = "pushed_id"
+        payload_ = dict(payload)
+        payload_["target_type"] = "pushed_id"
 
         # Send all our defined User Pushed ID's
         while len(users):
             # Get User's Pushed ID
-            _payload["pushed_id"] = users.pop(0)
+            payload_["pushed_id"] = users.pop(0)
 
             if not self._send(
-                payload=_payload, notify_type=notify_type, **kwargs
+                payload=payload_, notify_type=notify_type, **kwargs
             ):
-
                 # toggle flag
                 has_error = True
 
@@ -290,7 +288,8 @@ class NotifyPushed(NotifyBase):
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Return; we're done
                 return False
@@ -330,15 +329,17 @@ class NotifyPushed(NotifyBase):
             app_secret=self.pprint(
                 self.app_secret, privacy, mode=PrivacyMode.Secret, safe=""
             ),
-            targets="/".join([
-                NotifyPushed.quote(x)
-                for x in chain(
-                    # Channels are prefixed with a pound/hashtag symbol
-                    [f"#{x}" for x in self.channels],
-                    # Users are prefixed with an @ symbol
-                    [f"@{x}" for x in self.users],
-                )
-            ]),
+            targets="/".join(
+                [
+                    NotifyPushed.quote(x)
+                    for x in chain(
+                        # Channels are prefixed with a pound/hashtag symbol
+                        [f"#{x}" for x in self.channels],
+                        # Users are prefixed with an @ symbol
+                        [f"@{x}" for x in self.users],
+                    )
+                ]
+            ),
             params=NotifyPushed.urlencode(params),
         )
 

@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -45,7 +45,16 @@ class FORMPayloadField:
 
 
 # Defines the method to send the notification
-METHODS = ("POST", "GET", "DELETE", "PUT", "HEAD", "PATCH")
+METHODS = (
+    "POST",
+    "GET",
+    "DELETE",
+    "PUT",
+    "HEAD",
+    "PATCH",
+    "UPDATE",
+    "OPTIONS",
+)
 
 
 class NotifyForm(NotifyBase):
@@ -306,24 +315,26 @@ class NotifyForm(NotifyBase):
                     return False
 
                 try:
-                    files.append((
-                        (
-                            self.attach_as.format(no)
-                            if self.attach_multi_support
-                            else self.attach_as
-                        ),
+                    files.append(
                         (
                             (
-                                attachment.name
-                                if attachment.name
-                                else f"file{no:03}.dat"
+                                self.attach_as.format(no)
+                                if self.attach_multi_support
+                                else self.attach_as
                             ),
-                            # file handle is safely closed in `finally`; inline
-                            # open is intentional
-                            open(attachment.path, "rb"),  # noqa: SIM115
-                            attachment.mimetype,
-                        ),
-                    ))
+                            (
+                                (
+                                    attachment.name
+                                    if attachment.name
+                                    else f"file{no:03}.dat"
+                                ),
+                                # file handle safely closed in
+                                # `finally`; inline open intentional
+                                open(attachment.path, "rb"),  # noqa: SIM115
+                                attachment.mimetype,
+                            ),
+                        )
+                    )
 
                 except OSError as e:
                     self.logger.warning(
@@ -349,7 +360,6 @@ class NotifyForm(NotifyBase):
             (FORMPayloadField.MESSAGE, body),
             (FORMPayloadField.MESSAGETYPE, notify_type.value),
         ):
-
             if not self.payload_map[key]:
                 # Do not store element in payload response
                 continue
@@ -380,27 +390,14 @@ class NotifyForm(NotifyBase):
         # Always call throttle before any remote server i/o is made
         self.throttle()
 
+        # For GET the payload becomes URL query parameters; for all other
+        # methods it is sent as the request body.
         if self.method == "GET":
-            method = requests.get
             payload.update(self.params)
 
-        elif self.method == "PUT":
-            method = requests.put
-
-        elif self.method == "PATCH":
-            method = requests.patch
-
-        elif self.method == "DELETE":
-            method = requests.delete
-
-        elif self.method == "HEAD":
-            method = requests.head
-
-        else:  # POST
-            method = requests.post
-
         try:
-            r = method(
+            r = requests.request(
+                self.method,
                 url,
                 files=files if files else None,
                 data=payload if self.method != "GET" else None,
@@ -421,11 +418,12 @@ class NotifyForm(NotifyBase):
                     self.method,
                     status_str,
                     ", " if status_str else "",
-                    str(r.status_code),
+                    r.status_code,
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Return; we're done
                 return False

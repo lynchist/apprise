@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -147,8 +147,9 @@ apprise_url_tests = (
         },
     ),
     (
-        "https://discordapp.com/api/webhooks/{}/{}?footer=yes&botname=joe"
-        .format("0" * 10, "B" * 40),
+        "https://discordapp.com/api/webhooks/{}/{}?footer=yes&botname=joe".format(
+            "0" * 10, "B" * 40
+        ),
         {
             # Native URL Support with arguments
             "instance": NotifyDiscord,
@@ -166,33 +167,26 @@ apprise_url_tests = (
         },
     ),
     (
-        "discord://{}/{}?flags=1".format(
-            "i" * 24, "t" * 64
-        ),
+        "discord://{}/{}?flags=1".format("i" * 24, "t" * 64),
         {
             "instance": NotifyDiscord,
             "requests_response_code": requests.codes.no_content,
         },
     ),
     (
-        "discord://{}/{}?flags=-1".format(
-            "i" * 24, "t" * 64
-        ),
+        "discord://{}/{}?flags=-1".format("i" * 24, "t" * 64),
         {
             # invalid flags specified (variation 1)
             "instance": TypeError,
         },
     ),
     (
-        "discord://{}/{}?flags=invalid".format(
-            "i" * 24, "t" * 64
-        ),
+        "discord://{}/{}?flags=invalid".format("i" * 24, "t" * 64),
         {
             # invalid flags specified (variation 2)
             "instance": TypeError,
         },
     ),
-
     # different format support
     (
         "discord://{}/{}?format=markdown".format("i" * 24, "t" * 64),
@@ -1195,3 +1189,28 @@ def test_plugin_discord_markdown_single_field_posts_once(mock_post):
     )
     assert obj.send(body=body) is True
     assert mock_post.call_count == 1
+
+
+@mock.patch("requests.post")
+def test_plugin_discord_attach_memory(mock_post):
+    """Regression: AttachMemory must be sendable without OSError."""
+    from apprise.attachment.memory import AttachMemory
+
+    webhook_id = "C" * 24
+    webhook_token = "D" * 64
+
+    response = mock.Mock()
+    response.status_code = requests.codes.ok
+    response.content = b""
+    mock_post.return_value = response
+
+    obj = Apprise.instantiate(f"discord://{webhook_id}/{webhook_token}/")
+
+    mem = AttachMemory(
+        content=b"<html><body><h1>Test</h1></body></html>",
+        name="report.html",
+        mimetype="text/html",
+    )
+
+    assert obj.notify(body="Test", attach=mem) is True
+    assert mock_post.call_count >= 1

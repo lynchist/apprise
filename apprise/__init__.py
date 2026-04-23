@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -26,13 +26,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 __title__ = "Apprise"
-__description__: str = \
+__description__: str = (
     "Push Notifications that work with just about every platform!"
-__version__ = "1.9.7"
+)
+__version__ = "1.9.9"
 __author__ = "Chris Caron"
 __email__ = "lead2gold@gmail.com"
 __license__ = "BSD 2-Clause"
-__copyright__ = "Copyright (C) 2025 Chris Caron <lead2gold@gmail.com>"
+__copyright__ = "Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>"
 __status__ = "Production"
 
 from . import decorators, exception
@@ -64,7 +65,7 @@ from .config.base import ConfigBase
 from .locale import AppriseLocale
 
 # Inherit our logging with our additional entries added to it
-from .logger import LogCapture, logger, logging
+from .logger import LOGGER_NAME, LogCapture, logger, logging
 from .manager_attachment import AttachmentManager
 from .manager_config import ConfigurationManager
 from .manager_plugins import NotificationManager
@@ -79,6 +80,7 @@ __all__ = [
     "CONFIG_FORMATS",
     "CONTENT_INCLUDE_MODES",
     "CONTENT_LOCATIONS",
+    "LOGGER_NAME",
     "NOTIFY_FORMATS",
     "NOTIFY_IMAGE_SIZES",
     "NOTIFY_TYPES",

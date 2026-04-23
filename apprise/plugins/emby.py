@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -226,7 +226,8 @@ class NotifyEmby(NotifyBase):
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Return; we're done
                 return False
@@ -464,7 +465,6 @@ class NotifyEmby(NotifyBase):
                 requests.codes.ok,
                 requests.codes.no_content,
             ):
-
                 # We had a problem
                 status_str = NotifyEmby.http_response_code_lookup(
                     r.status_code

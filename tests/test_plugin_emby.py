@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -135,9 +135,9 @@ def test_plugin_emby_general(
     obj.user_id = "123"
 
     # Test our exception handling
-    for _exception in AppriseURLTester.req_exceptions:
-        mock_post.side_effect = _exception
-        mock_get.side_effect = _exception
+    for exception in AppriseURLTester.req_exceptions:
+        mock_post.side_effect = exception
+        mock_get.side_effect = exception
         # We'll fail to log in each time
         assert obj.notify("title", "body", "info") is False
 
@@ -189,9 +189,9 @@ def test_plugin_emby_login(mock_post, mock_get):
     assert isinstance(obj, NotifyEmby)
 
     # Test our exception handling
-    for _exception in AppriseURLTester.req_exceptions:
-        mock_post.side_effect = _exception
-        mock_get.side_effect = _exception
+    for exception in AppriseURLTester.req_exceptions:
+        mock_post.side_effect = exception
+        mock_get.side_effect = exception
         # We'll fail to log in each time
         assert obj.login() is False
 
@@ -237,9 +237,11 @@ def test_plugin_emby_login(mock_post, mock_get):
     assert obj.login() is False
 
     # Our login flat out fails if we don't have proper parseable content
-    mock_post.return_value.content = dumps({
-        "AccessToken": "0000-0000-0000-0000",
-    })
+    mock_post.return_value.content = dumps(
+        {
+            "AccessToken": "0000-0000-0000-0000",
+        }
+    )
     mock_get.return_value.content = mock_post.return_value.content
 
     obj = Apprise.instantiate("emby://l2g:l2gpass@localhost")
@@ -251,13 +253,15 @@ def test_plugin_emby_login(mock_post, mock_get):
     # Our text content (we intentionally reverse the 2 locations
     # that store the same thing; we do this so we can test which
     # one it defaults to if both are present
-    mock_post.return_value.content = dumps({
-        "User": {
-            "Id": "abcd123",
-        },
-        "Id": "123abc",
-        "AccessToken": "0000-0000-0000-0000",
-    })
+    mock_post.return_value.content = dumps(
+        {
+            "User": {
+                "Id": "abcd123",
+            },
+            "Id": "123abc",
+            "AccessToken": "0000-0000-0000-0000",
+        }
+    )
     mock_get.return_value.content = mock_post.return_value.content
 
     obj = Apprise.instantiate("emby://l2g:l2gpass@localhost")
@@ -271,12 +275,14 @@ def test_plugin_emby_login(mock_post, mock_get):
     # We're going to log in a second time which checks that we logout
     # first before logging in again. But this time we'll scrap the
     # 'Id' area and use the one found in the User area if detected
-    mock_post.return_value.content = dumps({
-        "User": {
-            "Id": "abcd123",
-        },
-        "AccessToken": "0000-0000-0000-0000",
-    })
+    mock_post.return_value.content = dumps(
+        {
+            "User": {
+                "Id": "abcd123",
+            },
+            "AccessToken": "0000-0000-0000-0000",
+        }
+    )
     mock_get.return_value.content = mock_post.return_value.content
 
     # Login
@@ -306,9 +312,9 @@ def test_plugin_emby_sessions(mock_post, mock_get, mock_logout, mock_login):
     obj.user_id = "123"
 
     # Test our exception handling
-    for _exception in AppriseURLTester.req_exceptions:
-        mock_post.side_effect = _exception
-        mock_get.side_effect = _exception
+    for exception in AppriseURLTester.req_exceptions:
+        mock_post.side_effect = exception
+        mock_get.side_effect = exception
         # We'll fail to log in each time
         sessions = obj.sessions()
         assert isinstance(sessions, dict) is True
@@ -348,17 +354,19 @@ def test_plugin_emby_sessions(mock_post, mock_get, mock_logout, mock_login):
     assert len(sessions) == 0
 
     # Let's get some results
-    mock_post.return_value.content = dumps([
-        {
-            "Id": "abc123",
-        },
-        {
-            "Id": "def456",
-        },
-        {
-            "InvalidEntry": None,
-        },
-    ])
+    mock_post.return_value.content = dumps(
+        [
+            {
+                "Id": "abc123",
+            },
+            {
+                "Id": "def456",
+            },
+            {
+                "InvalidEntry": None,
+            },
+        ]
+    )
     mock_get.return_value.content = mock_post.return_value.content
 
     sessions = obj.sessions(user_controlled=True)
@@ -397,9 +405,9 @@ def test_plugin_emby_logout(mock_post, mock_get, mock_login):
     obj.user_id = "123"
 
     # Test our exception handling
-    for _exception in AppriseURLTester.req_exceptions:
-        mock_post.side_effect = _exception
-        mock_get.side_effect = _exception
+    for exception in AppriseURLTester.req_exceptions:
+        mock_post.side_effect = exception
+        mock_get.side_effect = exception
         # We'll fail to log in each time
         obj.logout()
         obj.access_token = "abc"

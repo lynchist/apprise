@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -115,6 +115,12 @@ class NotifyWhatsApp(NotifyBase):
                 "required": True,
                 "regex": (r"^[0-9]+$", "i"),
             },
+            "language": {
+                "name": _("Language"),
+                "type": "string",
+                "default": "en_US",
+                "regex": (r"^[^0-9\s]+$", "i"),
+            },
             "target_phone": {
                 "name": _("Target Phone No"),
                 "type": "string",
@@ -125,12 +131,7 @@ class NotifyWhatsApp(NotifyBase):
             "targets": {
                 "name": _("Targets"),
                 "type": "list:string",
-            },
-            "language": {
-                "name": _("Language"),
-                "type": "string",
-                "default": "en_US",
-                "regex": (r"^[^0-9\s]+$", "i"),
+                "required": True,
             },
         },
     )
@@ -139,9 +140,6 @@ class NotifyWhatsApp(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "alias_of": "targets",
-            },
             "from": {
                 "alias_of": "from_phone_id",
             },
@@ -153,6 +151,9 @@ class NotifyWhatsApp(NotifyBase):
             },
             "lang": {
                 "alias_of": "language",
+            },
+            "to": {
+                "alias_of": "targets",
             },
         },
     )
@@ -344,29 +345,35 @@ class NotifyWhatsApp(NotifyBase):
             #
             # Send Message
             #
-            payload.update({
-                "recipient_type": "individual",
-                "type": "text",
-                "text": {"body": body},
-            })
+            payload.update(
+                {
+                    "recipient_type": "individual",
+                    "type": "text",
+                    "text": {"body": body},
+                }
+            )
 
         else:
             #
             # Send Template
             #
-            payload.update({
-                "type": "template",
-                "template": {
-                    "name": self.template,
-                    "language": {"code": self.language},
-                },
-            })
+            payload.update(
+                {
+                    "type": "template",
+                    "template": {
+                        "name": self.template,
+                        "language": {"code": self.language},
+                    },
+                }
+            )
 
             if self.components:
-                payload["template"]["components"] = [{
-                    "type": "body",
-                    "parameters": [],
-                }]
+                payload["template"]["components"] = [
+                    {
+                        "type": "body",
+                        "parameters": [],
+                    }
+                ]
                 for key in self.component_keys:
                     if isinstance(self.components[key], dict):
                         # Manual Assignment
@@ -376,14 +383,16 @@ class NotifyWhatsApp(NotifyBase):
                         continue
 
                     # Mapping of body and/or notify type
-                    payload["template"]["components"][0]["parameters"].append({
-                        "type": "text",
-                        "text": (
-                            body
-                            if self.components[key] == "body"
-                            else notify_type.value
-                        ),
-                    })
+                    payload["template"]["components"][0]["parameters"].append(
+                        {
+                            "type": "text",
+                            "text": (
+                                body
+                                if self.components[key] == "body"
+                                else notify_type.value
+                            ),
+                        }
+                    )
 
         # Create a copy of the targets list
         targets = list(self.targets)
@@ -457,7 +466,8 @@ class NotifyWhatsApp(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     # Mark our failure
                     has_error = True
@@ -506,24 +516,19 @@ class NotifyWhatsApp(NotifyBase):
         # Append our payload extras into our parameters
         params.update({f":{k}": v for k, v in self.template_mapping.items()})
 
-        return (
-            "{schema}://{template}{token}@{from_id}/{targets}/?{params}"
-            .format(
-                schema=self.secure_protocol,
-                from_id=self.pprint(self.from_phone_id, privacy, safe=""),
-                token=self.pprint(self.token, privacy, safe=""),
-                template=(
-                    ""
-                    if not self.template
-                    else "{}:".format(
-                        NotifyWhatsApp.quote(self.template, safe="")
-                    )
-                ),
-                targets="/".join(
-                    [NotifyWhatsApp.quote(x, safe="") for x in self.targets]
-                ),
-                params=NotifyWhatsApp.urlencode(params),
-            )
+        return "{schema}://{template}{token}@{from_id}/{targets}/?{params}".format(
+            schema=self.secure_protocol,
+            from_id=self.pprint(self.from_phone_id, privacy, safe=""),
+            token=self.pprint(self.token, privacy, safe=""),
+            template=(
+                ""
+                if not self.template
+                else "{}:".format(NotifyWhatsApp.quote(self.template, safe=""))
+            ),
+            targets="/".join(
+                [NotifyWhatsApp.quote(x, safe="") for x in self.targets]
+            ),
+            params=NotifyWhatsApp.urlencode(params),
         )
 
     def __len__(self):

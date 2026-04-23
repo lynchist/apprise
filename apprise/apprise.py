@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,6 +31,7 @@ import asyncio
 from collections.abc import Iterator
 import concurrent.futures as cf
 from itertools import chain
+import json
 import os
 from typing import Any, Optional, Union
 
@@ -47,6 +48,7 @@ from .logger import logger
 from .manager_plugins import NotificationManager
 from .plugins.base import NotifyBase
 from .utils.cwe312 import cwe312_url
+from .utils.json import AppriseJSONEncoder
 from .utils.logic import is_exclusive_match
 from .utils.parse import parse_list, parse_urls
 
@@ -313,16 +315,15 @@ class Apprise:
             )
             return False
 
-        for _server in servers:
-
-            if isinstance(_server, (ConfigBase, NotifyBase, AppriseConfig)):
+        for server in servers:
+            if isinstance(server, (ConfigBase, NotifyBase, AppriseConfig)):
                 # Go ahead and just add our plugin into our list
-                self.servers.append(_server)
+                self.servers.append(server)
                 continue
 
-            elif not isinstance(_server, (str, dict)):
+            elif not isinstance(server, (str, dict)):
                 logger.error(
-                    f"An invalid notification (type={type(_server)}) was"
+                    f"An invalid notification (type={type(server)}) was"
                     " specified."
                 )
                 return_status = False
@@ -330,7 +331,7 @@ class Apprise:
 
             # Instantiate ourselves an object, this function throws or
             # returns None if it fails
-            instance = Apprise.instantiate(_server, asset=asset, tag=tag)
+            instance = Apprise.instantiate(server, asset=asset, tag=tag)
             if not isinstance(instance, NotifyBase):
                 # No logging is required as instantiate() handles failure
                 # and/or success reasons for us
@@ -370,7 +371,6 @@ class Apprise:
 
         # Iterate over our loaded plugins
         for entry in self.servers:
-
             if isinstance(entry, (ConfigBase, AppriseConfig)):
                 # load our servers
                 servers = entry.servers()
@@ -451,11 +451,7 @@ class Apprise:
         parallel_result = Apprise._notify_parallel_threadpool(*parallel_calls)
         return sequential_result and parallel_result
 
-    async def async_notify(
-        self,
-        *args: Any,
-        **kwargs: Any
-    ) -> Optional[bool]:
+    async def async_notify(self, *args: Any, **kwargs: Any) -> Optional[bool]:
         """Send a notification to all the plugins previously loaded, for
         asynchronous callers.
 
@@ -528,14 +524,15 @@ class Apprise:
 
         try:
             notify_type = (
-                notify_type if isinstance(notify_type, common.NotifyType)
+                notify_type
+                if isinstance(notify_type, common.NotifyType)
                 else common.NotifyType(notify_type.lower())
             )
 
         except (AttributeError, ValueError, TypeError):
             err = (
-                f"An invalid notification type ({notify_type}) was "
-                "specified.")
+                f"An invalid notification type ({notify_type}) was specified."
+            )
             raise TypeError(err) from None
 
         try:
@@ -596,7 +593,6 @@ class Apprise:
                 key += "-emojis"
 
             if key not in conversion_title_map:
-
                 # Prepare our title
                 conversion_title_map[key] = title if title else ""
 
@@ -769,6 +765,53 @@ class Apprise:
 
         return all(results)
 
+    def json(
+        self,
+        lang: Optional[str] = None,
+        show_requirements: bool = False,
+        show_disabled: bool = False,
+        indent: Optional[int] = None,
+        path: Optional[str] = None,
+    ) -> Union[str, bool]:
+        """Returns a json response associated with the Apprise object."""
+        details = self.details(
+            lang=lang,
+            show_requirements=show_requirements,
+            show_disabled=show_disabled,
+        )
+
+        if not path:
+            return json.dumps(
+                details,
+                separators=(",", ":"),
+                indent=indent,
+                cls=AppriseJSONEncoder,
+            )
+
+        with open(path, "w") as fp:
+            try:
+                json.dump(
+                    details,
+                    fp,
+                    separators=(",", ":"),
+                    indent=indent,
+                    cls=AppriseJSONEncoder,
+                    ensure_ascii=False,
+                )
+
+            except (OSError, EOFError) as e:
+                logger.error("Apprise details dumpfile inaccessible: %s", path)
+                logger.debug("Apprise details dump Exception: %s", e)
+
+                # Early Exit
+                return False
+
+            finally:
+                # Reduce memory
+                del details
+
+        return True
+
     def details(
         self,
         lang: Optional[str] = None,
@@ -828,10 +871,12 @@ class Apprise:
                 secure_protocols = (secure_protocols,)
 
             # Add our protocol details to our content
-            content.update({
-                "protocols": protocols,
-                "secure_protocols": secure_protocols,
-            })
+            content.update(
+                {
+                    "protocols": protocols,
+                    "secure_protocols": secure_protocols,
+                }
+            )
 
             if not lang:
                 # Simply return our results
@@ -856,8 +901,8 @@ class Apprise:
         urls = []
         for s in self.servers:
             if isinstance(s, (ConfigBase, AppriseConfig)):
-                for _s in s.servers():
-                    urls.append(_s.url(privacy=privacy))
+                for s_ in s.servers():
+                    urls.append(s_.url(privacy=privacy))
             else:
                 urls.append(s.url(privacy=privacy))
         return urls
@@ -922,11 +967,13 @@ class Apprise:
                     offset = prev_offset + len(servers)
 
                     if offset >= index:
-                        return servers[(
-                            index
-                            if prev_offset == -1
-                            else (index - prev_offset - 1)
-                        )]
+                        return servers[
+                            (
+                                index
+                                if prev_offset == -1
+                                else (index - prev_offset - 1)
+                            )
+                        ]
 
             else:
                 offset = prev_offset + 1
@@ -968,7 +1015,8 @@ class Apprise:
 
         location = state.get("location")
         self.location = (
-            location if isinstance(location, ContentLocation)
+            location
+            if isinstance(location, ContentLocation)
             else ContentLocation(location)
             if location is not None
             else None
@@ -989,14 +1037,16 @@ class Apprise:
 
         This includes those found inside configuration.
         """
-        return chain(*[
-            (
-                [s]
-                if not isinstance(s, (ConfigBase, AppriseConfig))
-                else iter(s.servers())
-            )
-            for s in self.servers
-        ])
+        return chain(
+            *[
+                (
+                    [s]
+                    if not isinstance(s, (ConfigBase, AppriseConfig))
+                    else iter(s.servers())
+                )
+                for s in self.servers
+            ]
+        )
 
     def __len__(self) -> int:
         """Returns the number of servers loaded; this includes those found
@@ -1005,11 +1055,11 @@ class Apprise:
         This funtion nnever actually counts the Config entry themselves (if
         they exist), only what they contain.
         """
-        return sum([
+        return sum(
             (
                 1
                 if not isinstance(s, (ConfigBase, AppriseConfig))
                 else len(s.servers())
             )
             for s in self.servers
-        ])
+        )

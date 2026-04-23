@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -81,9 +81,7 @@ def test_plugin_aprs_urls(mock_create_connection):
     assert instance.notify("test") is True
 
     # 1N3 callsigns
-    instance = apprise.Apprise.instantiate(
-        "aprs://D1JSL-15:12345@D1ABC"
-    )
+    instance = apprise.Apprise.instantiate("aprs://D1JSL-15:12345@D1ABC")
     assert isinstance(instance, NotifyAprs)
 
     instance = apprise.Apprise.instantiate(

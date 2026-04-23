@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -120,7 +120,6 @@ class CustomNotifyPlugin(NotifyBase):
         # `Apprise.details()` to correctly differentiate one custom plugin
         # that was loaded from another
         class CustomNotifyPluginWrapper(CustomNotifyPlugin):
-
             # Our Service Name
             service_name = (
                 name
@@ -193,7 +192,7 @@ class CustomNotifyPlugin(NotifyBase):
                         N_MGR[self.secure_protocol].service_name,
                     )
                     self.logger.debug(
-                        "%s Exception: %s", N_MGR[self.secure_protocol], str(e)
+                        "%s Exception: %s", N_MGR[self.secure_protocol], e
                     )
                     return False
 

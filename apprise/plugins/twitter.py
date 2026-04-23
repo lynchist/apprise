@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -312,7 +312,6 @@ class NotifyTwitter(NotifyBase):
             # We need to upload our payload first so that we can source it
             # in remaining messages
             for no, attachment in enumerate(attach, start=1):
-
                 # Perform some simple error checking
                 if not attachment:
                     # We could not access the attachment
@@ -376,13 +375,15 @@ class NotifyTwitter(NotifyBase):
                 #   }
                 # }
 
-                response.update({
-                    # Update our response to additionally include the
-                    # attachment details
-                    "file_name": filename,
-                    "file_mime": attachment.mimetype,
-                    "file_path": attachment.path,
-                })
+                response.update(
+                    {
+                        # Update our response to additionally include the
+                        # attachment details
+                        "file_name": filename,
+                        "file_mime": attachment.mimetype,
+                        "file_path": attachment.path,
+                    }
+                )
 
                 # Save our pre-prepared payload for attachment posting
                 attachments.append(response)
@@ -457,13 +458,13 @@ class NotifyTwitter(NotifyBase):
                 batches.append(",".join(batch))
 
             for no, media_ids in enumerate(batches):
-                _payload = deepcopy(payload)
-                _payload["media_ids"] = media_ids
+                payload_ = deepcopy(payload)
+                payload_["media_ids"] = media_ids
 
                 if no or not body:
                     # strip text and replace it with the image representation
-                    _payload["status"] = f"{no + 1:02d}/{len(batches):02d}"
-                payloads.append(_payload)
+                    payload_["status"] = f"{no + 1:02d}/{len(batches):02d}"
+                payloads.append(payload_)
 
         for no, payload in enumerate(payloads, start=1):
             # Send Tweet
@@ -563,9 +564,9 @@ class NotifyTwitter(NotifyBase):
 
         else:
             for no, attachment in enumerate(attachments):
-                _payload = deepcopy(payload)
-                _data = _payload["event"]["message_create"]["message_data"]
-                _data["attachment"] = {
+                payload_ = deepcopy(payload)
+                data = payload_["event"]["message_create"]["message_data"]
+                data["attachment"] = {
                     "type": "media",
                     "media": {"id": attachment["media_id"]},
                     "additional_owners": ",".join(
@@ -574,8 +575,8 @@ class NotifyTwitter(NotifyBase):
                 }
                 if no or not body:
                     # strip text and replace it with the image representation
-                    _data["text"] = f"{no + 1:02d}/{len(attachments):02d}"
-                payloads.append(_payload)
+                    data["text"] = f"{no + 1:02d}/{len(attachments):02d}"
+                payloads.append(payload_)
 
         for no, payload in enumerate(payloads, start=1):
             for screen_name, user_id in targets.items():
@@ -785,7 +786,8 @@ class NotifyTwitter(NotifyBase):
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Mark our failure
                 return (False, content)
@@ -880,10 +882,12 @@ class NotifyTwitter(NotifyBase):
                     self.asecret, privacy, mode=PrivacyMode.Secret, safe=""
                 ),
                 targets=(
-                    "/".join([
-                        NotifyTwitter.quote(f"@{target}", safe="@")
-                        for target in self.targets
-                    ])
+                    "/".join(
+                        [
+                            NotifyTwitter.quote(f"@{target}", safe="@")
+                            for target in self.targets
+                        ]
+                    )
                     if self.targets
                     else ""
                 ),

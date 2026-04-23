@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -178,9 +178,6 @@ class NotifyReddit(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "alias_of": "targets",
-            },
             "kind": {
                 "name": _("Kind"),
                 "type": "choice:string",
@@ -226,6 +223,9 @@ class NotifyReddit(NotifyBase):
                 "type": "bool",
                 "default": False,
                 "map_to": "resubmit",
+            },
+            "to": {
+                "alias_of": "targets",
             },
         },
     )
@@ -519,13 +519,17 @@ class NotifyReddit(NotifyBase):
                 payload["flair_text"] = self.flair_text
 
             if kind == RedditMessageKind.LINK:
-                payload.update({
-                    "url": body,
-                })
+                payload.update(
+                    {
+                        "url": body,
+                    }
+                )
             else:
-                payload.update({
-                    "text": body,
-                })
+                payload.update(
+                    {
+                        "text": body,
+                    }
+                )
 
             postokay, _response = self._fetch(self.submit_url, payload=payload)
             # only toggle has_error flag if we had an error
@@ -605,7 +609,6 @@ class NotifyReddit(NotifyBase):
                 and self.__access_token
                 and url != self.auth_url
             ):
-
                 # We had a problem
                 status_str = NotifyReddit.http_response_code_lookup(
                     r.status_code, REDDIT_HTTP_ERROR_MAP
@@ -619,7 +622,8 @@ class NotifyReddit(NotifyBase):
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # We failed to authenticate with our token; login one more
                 # time and retry this original request

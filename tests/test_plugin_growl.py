@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -283,7 +283,6 @@ def test_plugin_growl_general(mock_gntp):
 
     # iterate over our dictionary and test it out
     for url, meta in urls:
-
         # Our expected instance
         instance = meta.get("instance", None)
 

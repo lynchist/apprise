@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -242,7 +242,6 @@ def test_apprise_trans_windows_users_win(mock_getlocale):
     with mock.patch(
         "ctypes.windll.kernel32.GetUserDefaultUILanguage"
     ) as ui_lang:
-
         # 4105 = en_CA
         ui_lang.return_value = 4105
 
@@ -321,7 +320,7 @@ def test_apprise_trans_windows_users_nux(mock_getlocale):
         # We fall back to posix locale
         assert locale.AppriseLocale.detect_language() == "fr"
 
-    delattr(ctypes, "windll")
+    del ctypes.windll
 
     # Restore default value
     locale.AppriseLocale._default_language = default_language

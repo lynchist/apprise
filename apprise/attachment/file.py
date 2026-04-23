@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -107,7 +107,6 @@ class AttachFile(AttachBase):
             self.max_file_size > 0
             and os.path.getsize(self.dirty_path) > self.max_file_size
         ):
-
             # The content to attach is to large
             self.logger.error(
                 "Content exceeds allowable maximum file length"

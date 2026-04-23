@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -134,8 +134,9 @@ apprise_url_tests = (
     ),
     # One To Email address
     (
-        "smtp2go://user@localhost.localdomain/{}-{}-{}/test@example.com"
-        .format("a" * 32, "b" * 8, "c" * 8),
+        "smtp2go://user@localhost.localdomain/{}-{}-{}/test@example.com".format(
+            "a" * 32, "b" * 8, "c" * 8
+        ),
         {
             "instance": NotifySMTP2Go,
         },

@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -140,6 +140,12 @@ class NotifySendGrid(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
+            "template": {
+                # Template ID
+                # The template ID is 64 characters with one dash (d-uuid)
+                "name": _("Template"),
+                "type": "string",
+            },
             "to": {
                 "alias_of": "targets",
             },
@@ -150,12 +156,6 @@ class NotifySendGrid(NotifyBase):
             "bcc": {
                 "name": _("Blind Carbon Copy"),
                 "type": "list:string",
-            },
-            "template": {
-                # Template ID
-                # The template ID is 64 characters with one dash (d-uuid)
-                "name": _("Template"),
-                "type": "string",
             },
         },
     )
@@ -220,7 +220,6 @@ class NotifySendGrid(NotifyBase):
         # Validate recipients (to:) and drop bad ones:
         if targets:
             for recipient in parse_list(targets):
-
                 result = is_email(recipient)
                 if result:
                     self.targets.append(result["full_email"])
@@ -235,7 +234,6 @@ class NotifySendGrid(NotifyBase):
 
         # Validate recipients (cc:) and drop bad ones:
         for recipient in parse_list(cc):
-
             result = is_email(recipient)
             if result:
                 self.cc.add(result["full_email"])
@@ -247,7 +245,6 @@ class NotifySendGrid(NotifyBase):
 
         # Validate recipients (bcc:) and drop bad ones:
         for recipient in parse_list(bcc):
-
             result = is_email(recipient)
             if result:
                 self.bcc.add(result["full_email"])
@@ -328,7 +325,8 @@ class NotifySendGrid(NotifyBase):
         if not self.targets:
             # There is no one to email; we're done
             self.logger.warning(
-                "There are no SendGrid email recipients to notify")
+                "There are no SendGrid email recipients to notify"
+            )
             return False
 
         headers = {
@@ -341,11 +339,13 @@ class NotifySendGrid(NotifyBase):
         has_error = False
 
         # A Simple Email Payload Template
-        _payload = {
-            "personalizations": [{
-                # Placeholder
-                "to": [{"email": None}],
-            }],
+        payload_ = {
+            "personalizations": [
+                {
+                    # Placeholder
+                    "to": [{"email": None}],
+                }
+            ],
             "from": {
                 "email": self.from_email,
             },
@@ -353,14 +353,16 @@ class NotifySendGrid(NotifyBase):
             # set a default with at least 1 character or SendGrid will deny
             # our request
             "subject": title if title else self.default_empty_subject,
-            "content": [{
-                "type": (
-                    "text/plain"
-                    if self.notify_format == NotifyFormat.TEXT
-                    else "text/html"
-                ),
-                "value": body,
-            }],
+            "content": [
+                {
+                    "type": (
+                        "text/plain"
+                        if self.notify_format == NotifyFormat.TEXT
+                        else "text/html"
+                    ),
+                    "value": body,
+                }
+            ],
         }
 
         if attach and self.attachment_support:
@@ -378,16 +380,18 @@ class NotifySendGrid(NotifyBase):
                     return False
 
                 try:
-                    attachments.append({
-                        "content": attachment.base64(),
-                        "filename": (
-                            attachment.name
-                            if attachment.name
-                            else f"file{no:03}.dat"
-                        ),
-                        "type": "application/octet-stream",
-                        "disposition": "attachment",
-                    })
+                    attachments.append(
+                        {
+                            "content": attachment.base64(),
+                            "filename": (
+                                attachment.name
+                                if attachment.name
+                                else f"file{no:03}.dat"
+                            ),
+                            "type": "application/octet-stream",
+                            "disposition": "attachment",
+                        }
+                    )
 
                 except exception.AppriseException:
                     # We could not access the attachment
@@ -403,15 +407,17 @@ class NotifySendGrid(NotifyBase):
                 )
 
             # Append our attachments to the payload
-            _payload.update({
-                "attachments": attachments,
-            })
+            payload_.update(
+                {
+                    "attachments": attachments,
+                }
+            )
 
         if self.template:
-            _payload["template_id"] = self.template
+            payload_["template_id"] = self.template
 
             if self.template_data:
-                _payload["personalizations"][0]["dynamic_template_data"] = (
+                payload_["personalizations"][0]["dynamic_template_data"] = (
                     dict(self.template_data.items())
                 )
 
@@ -420,7 +426,7 @@ class NotifySendGrid(NotifyBase):
             target = targets.pop(0)
 
             # Create a copy of our template
-            payload = _payload.copy()
+            payload = payload_.copy()
 
             # the cc, bcc, to field must be unique or SendMail will fail, the
             # below code prepares this by ensuring the target isn't in the cc
@@ -454,7 +460,8 @@ class NotifySendGrid(NotifyBase):
                     f"(cert_verify={self.verify_certificate!r})"
                 )
                 self.logger.debug(
-                    "SendGrid Payload: %s", sanitize_payload(payload))
+                    "SendGrid Payload: %s", sanitize_payload(payload)
+                )
 
             # Always call throttle before any remote server i/o is made
             self.throttle()
@@ -486,7 +493,8 @@ class NotifySendGrid(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     # Mark our failure
                     has_error = True

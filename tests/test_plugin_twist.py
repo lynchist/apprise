@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -189,10 +189,12 @@ def test_plugin_twist_auth(mock_post, mock_get):
     mock_post.return_value = requests.Request()
     mock_post.return_value.status_code = requests.codes.ok
     mock_get.return_value.status_code = requests.codes.ok
-    mock_post.return_value.content = dumps({
-        "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
-        "default_workspace": 12345,
-    })
+    mock_post.return_value.content = dumps(
+        {
+            "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
+            "default_workspace": 12345,
+        }
+    )
     mock_get.return_value.content = mock_post.return_value.content
 
     # Instantiate an object
@@ -208,16 +210,18 @@ def test_plugin_twist_auth(mock_post, mock_get):
     assert obj._channel_migration() is True
 
     # Workspace Success
-    mock_post.return_value.content = dumps([
-        {
-            "name": "TesT",
-            "id": 1,
-        },
-        {
-            "name": "tESt2",
-            "id": 2,
-        },
-    ])
+    mock_post.return_value.content = dumps(
+        [
+            {
+                "name": "TesT",
+                "id": 1,
+            },
+            {
+                "name": "tESt2",
+                "id": 2,
+            },
+        ]
+    )
     mock_get.return_value.content = mock_post.return_value.content
 
     results = obj.get_workspaces()
@@ -227,16 +231,18 @@ def test_plugin_twist_auth(mock_post, mock_get):
     assert "test2" in results
     assert results["test2"] == 2
 
-    mock_post.return_value.content = dumps([
-        {
-            "name": "ChaNNEL1",
-            "id": 1,
-        },
-        {
-            "name": "chaNNel2",
-            "id": 2,
-        },
-    ])
+    mock_post.return_value.content = dumps(
+        [
+            {
+                "name": "ChaNNEL1",
+                "id": 1,
+            },
+            {
+                "name": "chaNNel2",
+                "id": 2,
+            },
+        ]
+    )
     mock_get.return_value.content = mock_post.return_value.content
     results = obj.get_channels(wid=1)
     assert len(results) == 2
@@ -294,34 +300,40 @@ def test_plugin_twist_cache(mock_post, mock_get):
 
         if url.endswith("/login"):
             # Simulate a successful login
-            request.content = dumps({
-                "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
-                "default_workspace": 1,
-            })
+            request.content = dumps(
+                {
+                    "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
+                    "default_workspace": 1,
+                }
+            )
 
         elif url.endswith("workspaces/get"):
-            request.content = dumps([
-                {
-                    "name": "TeamA",
-                    "id": 1,
-                },
-                {
-                    "name": "TeamB",
-                    "id": 2,
-                },
-            ])
+            request.content = dumps(
+                [
+                    {
+                        "name": "TeamA",
+                        "id": 1,
+                    },
+                    {
+                        "name": "TeamB",
+                        "id": 2,
+                    },
+                ]
+            )
 
         elif url.endswith("channels/get"):
-            request.content = dumps([
-                {
-                    "name": "ChanA",
-                    "id": 1,
-                },
-                {
-                    "name": "ChanB",
-                    "id": 2,
-                },
-            ])
+            request.content = dumps(
+                [
+                    {
+                        "name": "ChanA",
+                        "id": 1,
+                    },
+                    {
+                        "name": "ChanB",
+                        "id": 2,
+                    },
+                ]
+            )
 
         return request
 
@@ -375,7 +387,7 @@ def test_plugin_twist_fetch(mock_post, mock_get):
 
     # Track our iteration; by tracing within an object, we can re-reference
     # it within a function scope.
-    _cache = {
+    cache = {
         "first_time": True,
     }
 
@@ -387,23 +399,27 @@ def test_plugin_twist_fetch(mock_post, mock_get):
         request.status_code = requests.codes.ok
 
         # Simulate a successful login
-        request.content = dumps({
-            "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
-            "default_workspace": 12345,
-        })
+        request.content = dumps(
+            {
+                "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
+                "default_workspace": 12345,
+            }
+        )
 
-        if url.endswith("threads/add") and _cache["first_time"] is True:
+        if url.endswith("threads/add") and cache["first_time"] is True:
             # First time iteration; act as if we failed; our second iteration
             # will not enter this and be successful. This is done by simply
             # toggling the first_time flag:
-            _cache["first_time"] = False
+            cache["first_time"] = False
 
             # otherwise, we set our first-time failure settings
             request.status_code = 403
-            request.content = dumps({
-                "error_code": 200,
-                "error_string": "Invalid token",
-            })
+            request.content = dumps(
+                {
+                    "error_code": 200,
+                    "error_string": "Invalid token",
+                }
+            )
 
         return request
 
@@ -418,7 +434,7 @@ def test_plugin_twist_fetch(mock_post, mock_get):
     postokay, response = obj._fetch("threads/add")
 
     ##########################################################################
-    _cache = {
+    cache = {
         "first_time": True,
     }
 
@@ -430,25 +446,29 @@ def test_plugin_twist_fetch(mock_post, mock_get):
         request.status_code = requests.codes.ok
 
         # Simulate a successful login
-        request.content = dumps({
-            "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
-            "default_workspace": 12345,
-        })
+        request.content = dumps(
+            {
+                "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
+                "default_workspace": 12345,
+            }
+        )
 
-        if url.endswith("threads/add") and _cache["first_time"] is True:
+        if url.endswith("threads/add") and cache["first_time"] is True:
             # First time iteration; act as if we failed; our second iteration
             # will not enter this and be successful. This is done by simply
             # toggling the first_time flag:
-            _cache["first_time"] = False
+            cache["first_time"] = False
 
             # otherwise, we set our first-time failure settings
             request.status_code = 403
-            request.content = dumps({
-                "error_code": 200,
-                "error_string": "Invalid token",
-            })
+            request.content = dumps(
+                {
+                    "error_code": 200,
+                    "error_string": "Invalid token",
+                }
+            )
 
-        elif url.endswith("threads/add") and _cache["first_time"] is False:
+        elif url.endswith("threads/add") and cache["first_time"] is False:
             # unparseable response throws the exception
             request.status_code = 200
             request.content = "{"
@@ -466,7 +486,7 @@ def test_plugin_twist_fetch(mock_post, mock_get):
     postokay, response = obj._fetch("threads/add")
 
     ##########################################################################
-    _cache = {
+    cache = {
         "first_time": True,
     }
 
@@ -478,25 +498,29 @@ def test_plugin_twist_fetch(mock_post, mock_get):
         request.status_code = requests.codes.ok
 
         # Simulate a successful login
-        request.content = dumps({
-            "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
-            "default_workspace": 12345,
-        })
+        request.content = dumps(
+            {
+                "token": "2e82c1e4e8b0091fdaa34ff3972351821406f796",
+                "default_workspace": 12345,
+            }
+        )
 
-        if url.endswith("threads/add") and _cache["first_time"] is True:
+        if url.endswith("threads/add") and cache["first_time"] is True:
             # First time iteration; act as if we failed; our second iteration
             # will not enter this and be successful. This is done by simply
             # toggling the first_time flag:
-            _cache["first_time"] = False
+            cache["first_time"] = False
 
             # otherwise, we set our first-time failure settings
             request.status_code = 403
-            request.content = dumps({
-                "error_code": 200,
-                "error_string": "Invalid token",
-            })
+            request.content = dumps(
+                {
+                    "error_code": 200,
+                    "error_string": "Invalid token",
+                }
+            )
 
-        elif url.endswith("/login") and _cache["first_time"] is False:
+        elif url.endswith("/login") and cache["first_time"] is False:
             # Fail to login
             request.status_code = 403
             request.content = "{}"

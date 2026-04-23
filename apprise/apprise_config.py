@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -35,6 +35,7 @@ from .config.base import ConfigBase
 from .logger import logger
 from .manager_config import ConfigurationManager
 from .url import URLBase
+from .utils.cwe312 import cwe312_url
 from .utils.logic import is_exclusive_match
 from .utils.parse import GET_SCHEMA_RE, parse_list
 
@@ -202,27 +203,26 @@ class AppriseConfig:
             return False
 
         # Iterate over our configuration
-        for _config in configs:
-
-            if isinstance(_config, ConfigBase):
+        for config in configs:
+            if isinstance(config, ConfigBase):
                 # Go ahead and just add our configuration into our list
-                self.configs.append(_config)
+                self.configs.append(config)
                 continue
 
-            elif not isinstance(_config, str):
+            elif not isinstance(config, str):
                 logger.warning(
-                    f"An invalid configuration (type={type(_config)}) was"
+                    f"An invalid configuration (type={type(config)}) was"
                     " specified."
                 )
                 return_status = False
                 continue
 
-            logger.debug(f"Loading configuration: {_config}")
+            logger.debug(f"Loading configuration: {config}")
 
             # Instantiate ourselves an object, this function throws or
             # returns None if it fails
             instance = AppriseConfig.instantiate(
-                _config,
+                config,
                 asset=asset,
                 tag=tag,
                 cache=cache,
@@ -296,8 +296,10 @@ class AppriseConfig:
             insecure_includes=insecure_includes,
         )
 
-        if not (instance.config_format and \
-                instance.config_format.value in common.CONFIG_FORMATS):
+        if not (
+            instance.config_format
+            and instance.config_format.value in common.CONFIG_FORMATS
+        ):
             logger.warning(
                 "The format of the configuration could not be detected."
             )
@@ -345,7 +347,6 @@ class AppriseConfig:
         response = []
 
         for entry in self.configs:
-
             # Apply our tag matching based on our defined logic
             if is_exclusive_match(
                 logic=tag,
@@ -388,7 +389,7 @@ class AppriseConfig:
 
             # Some basic validation
             if schema not in C_MGR:
-                logger.warning(f"Unsupported schema {schema}.")
+                logger.error(f"Unsupported schema {schema}.")
                 return None
 
         # Parse our url details of the server object as dictionary containing
@@ -397,7 +398,14 @@ class AppriseConfig:
 
         if not results:
             # Failed to parse the server URL
-            logger.warning(f"Unparseable URL {url}.")
+            # CWE-312 (Secure Logging) Handling
+            secure_logging = (
+                asset.secure_logging
+                if isinstance(asset, AppriseAsset)
+                else True
+            )
+            loggable_url = url if not secure_logging else cwe312_url(url)
+            logger.error(f"Unparseable URL {loggable_url}.")
             return None
 
         # Build a list of tags to associate with the newly added notifications
@@ -426,7 +434,13 @@ class AppriseConfig:
 
             except Exception:
                 # the arguments are invalid or can not be used.
-                logger.warning(f"Could not load URL: {url}")
+                # CWE-312 (Secure Logging) Handling
+                loggable_url = (
+                    url
+                    if not results["asset"].secure_logging
+                    else cwe312_url(url)
+                )
+                logger.error(f"Could not load URL: {loggable_url}")
                 return None
 
         else:

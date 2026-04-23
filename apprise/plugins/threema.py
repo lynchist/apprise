@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -123,9 +123,6 @@ class NotifyThreema(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "alias_of": "targets",
-            },
             "from": {
                 "alias_of": "gateway_id",
             },
@@ -134,6 +131,9 @@ class NotifyThreema(NotifyBase):
             },
             "secret": {
                 "alias_of": "secret",
+            },
+            "to": {
+                "alias_of": "targets",
             },
         },
     )
@@ -220,7 +220,7 @@ class NotifyThreema(NotifyBase):
         }
 
         # Prepare our payload
-        _payload = {
+        payload_ = {
             "secret": self.secret,
             "from": self.user,
             "text": body.encode("utf-8"),
@@ -234,7 +234,7 @@ class NotifyThreema(NotifyBase):
             key, target = targets.pop(0)
 
             # Prepare a payload object
-            payload = _payload.copy()
+            payload = payload_.copy()
 
             # Set Target
             payload[key] = target
@@ -275,7 +275,8 @@ class NotifyThreema(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     # Mark our failure
                     has_error = True

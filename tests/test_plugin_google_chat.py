@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -217,8 +217,10 @@ def test_plugin_google_chat_general(mock_post):
     params = mock_post.call_args_list[0][1]["params"]
     assert params.get("token") == token
     assert params.get("key") == key
-    assert params.get("messageReplyOption") == \
-        "REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
+    assert (
+        params.get("messageReplyOption")
+        == "REPLY_MESSAGE_FALLBACK_TO_NEW_THREAD"
+    )
     payload = loads(mock_post.call_args_list[0][1]["data"])
     assert "thread" in payload
     assert payload["text"] == "title\r\ntest body"

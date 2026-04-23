@@ -1,7 +1,7 @@
-# BSD 3-Clause License
+# BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2023, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -12,10 +12,6 @@
 # 2. Redistributions in binary form must reproduce the above copyright notice,
 #    this list of conditions and the following disclaimer in the documentation
 #    and/or other materials provided with the distribution.
-#
-# 3. Neither the name of the copyright holder nor the names of its
-#    contributors may be used to endorse or promote products derived from
-#    this software without specific prior written permission.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -125,9 +121,6 @@ class NotifyPlivo(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "alias_of": "targets",
-            },
             "from": {
                 "alias_of": "source",
             },
@@ -136,6 +129,9 @@ class NotifyPlivo(NotifyBase):
             },
             "id": {
                 "alias_of": "auth_id",
+            },
+            "to": {
+                "alias_of": "targets",
             },
             "batch": {
                 "name": _("Batch Mode"),
@@ -180,7 +176,7 @@ class NotifyPlivo(NotifyBase):
             raise TypeError(msg)
 
         # Store our source; enforce E.164 format
-        self.source = f'+{result["full"]}'
+        self.source = f"+{result['full']}"
 
         # Parse our targets
         self.targets = []
@@ -191,7 +187,7 @@ class NotifyPlivo(NotifyBase):
                 result = is_phone_no(target)
                 if result:
                     # store valid phone number; enforce E.164 format
-                    self.targets.append(f'+{result["full"]}')
+                    self.targets.append(f"+{result['full']}")
                     continue
 
                 self.logger.warning(
@@ -288,7 +284,8 @@ class NotifyPlivo(NotifyBase):
                     )
 
                     self.logger.debug(
-                        "Response Details:\r\n%r", (r.content or b"")[:2000])
+                        "Response Details:\r\n%r", (r.content or b"")[:2000]
+                    )
 
                     # Mark our failure
                     has_error = True

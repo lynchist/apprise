@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -246,8 +246,11 @@ class NotifyRSyslog(NotifyBase):
         )
 
         priority = SYSLOG_PUBLISH_MAP[notify_type] + self.facility * 8
-        payload = f"<{priority}>- {os.getpid()} {body}" \
-            if self.log_pid else f"<{priority}>- {body}"
+        payload = (
+            f"<{priority}>- {os.getpid()} {body}"
+            if self.log_pid
+            else f"<{priority}>- {body}"
+        )
 
         # send UDP packet to upstream server
         self.logger.debug(

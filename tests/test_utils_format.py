@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -276,8 +276,10 @@ def test_html_adjust_guard_paths_and_no_entity() -> None:
     assert html_adjust(text, window_start=2, split_at=2) == 2
 
     # split_at beyond the end of the text -> early-return unchanged
-    assert html_adjust(
-        text, window_start=0, split_at=len(text) + 5) == len(text) + 5
+    assert (
+        html_adjust(text, window_start=0, split_at=len(text) + 5)
+        == len(text) + 5
+    )
 
     # No '&' in window, nothing to adjust
     assert html_adjust(text, window_start=0, split_at=3) == 3
@@ -310,8 +312,10 @@ def test_markdown_adjust_guard_and_no_construct() -> None:
     assert markdown_adjust(text, window_start=4, split_at=4) == 4
 
     # split_at past the end -> early-return unchanged
-    assert markdown_adjust(
-        text, window_start=0, split_at=len(text) + 3) == len(text) + 3
+    assert (
+        markdown_adjust(text, window_start=0, split_at=len(text) + 3)
+        == len(text) + 3
+    )
 
     # No markdown constructs -> nothing to adjust
     assert markdown_adjust(text, window_start=0, split_at=5) == 5

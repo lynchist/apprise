@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -254,15 +254,17 @@ class NotifyTwist(NotifyBase):
                 ),
                 user=self.quote(self.user, safe=""),
                 host=self.host,
-                targets="/".join([
-                    NotifyTwist.quote(x, safe="")
-                    for x in chain(
-                        # Channels are prefixed with a pound/hashtag symbol
-                        [f"#{x}" for x in self.channels],
-                        # Channel IDs
-                        self.channel_ids,
-                    )
-                ]),
+                targets="/".join(
+                    [
+                        NotifyTwist.quote(x, safe="")
+                        for x in chain(
+                            # Channels are prefixed with a pound/hashtag symbol
+                            [f"#{x}" for x in self.channels],
+                            # Channel IDs
+                            self.channel_ids,
+                        )
+                    ]
+                ),
                 params=NotifyTwist.urlencode(params),
             )
         )
@@ -695,7 +697,6 @@ class NotifyTwist(NotifyBase):
                 and content.get("error_code") in (120, 200)
                 and self.login()
             ):
-
                 r = fn(
                     api_url,
                     data=payload,
@@ -730,7 +731,8 @@ class NotifyTwist(NotifyBase):
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Mark our failure
                 return (False, content)
@@ -794,9 +796,9 @@ class NotifyTwist(NotifyBase):
             # For the purpose of apprise simplifying this for us, we need to
             # swap these arguments when we prepare the email.
 
-            _password = results["user"]
+            password = results["user"]
             results["user"] = results["password"]
-            results["password"] = _password
+            results["password"] = password
 
         # The 'to' makes it easier to use yaml configuration
         if "to" in results["qsd"] and len(results["qsd"]["to"]):

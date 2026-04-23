@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -153,7 +153,6 @@ class AttachHTTP(AttachBase):
                     timeout=self.request_timeout,
                     stream=True,
                 ) as r:
-
                     # Handle Errors
                     r.raise_for_status()
 
@@ -169,7 +168,6 @@ class AttachHTTP(AttachBase):
                         self.max_file_size > 0
                         and file_size > self.max_file_size
                     ):
-
                         # The content retrieved is to large
                         self.logger.error(
                             "HTTP response exceeds allowable maximum file"
@@ -186,7 +184,7 @@ class AttachHTTP(AttachBase):
 
                     d = r.headers.get("Content-Disposition", "")
                     result = re.search(
-                        "filename=['\"]?(?P<name>[^'\"]+)['\"]?", d, re.I
+                        r"filename=['\"]?(?P<name>[^'\"]+)['\"]?", d, re.I
                     )
                     if result:
                         self.detected_name = result.group("name").strip()
@@ -195,8 +193,7 @@ class AttachHTTP(AttachBase):
                     # to False or it isn't compatible with Microsoft Windows
                     # instances. In lieu of this, __del__ will clean up the
                     # file for us.
-                    self._temp_file = \
-                        NamedTemporaryFile(delete=False)  # noqa: SIM115
+                    self._temp_file = NamedTemporaryFile(delete=False)  # noqa: SIM115
 
                     # Get our chunk size
                     chunk_size = self.chunk_size

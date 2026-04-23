@@ -58,6 +58,7 @@ keywords = [
     "Automated Packet Reporting System",
     "AWS",
     "Bark",
+    "Blink(1)",
     "BlueSky",
     "Brevo",
     "BulkSMS",
@@ -77,9 +78,12 @@ keywords = [
     "Email",
     "Emby",
     "Enigma2",
+    "Evolution API",
+    "Exotel",
     "FCM",
     "Feishu",
     "Flock",
+    "Fluxer",
     "Form",
     "Free Mobile",
     "Gnome",
@@ -90,6 +94,9 @@ keywords = [
     "Home Assistant",
     "httpSMS",
     "IFTTT",
+    "IRC",
+    "Jellyfin",
+    "Jira",
     "Join",
     "JSON",
     "Kavenegar",
@@ -188,6 +195,7 @@ keywords = [
     "WxPusher",
     "XBMC",
     "XML",
+    "XMPP",
     "Zulip",
 ]
 
@@ -201,7 +209,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-mock",
-    "ruff",
+    "ruff==0.15.8",
     "babel",
     "validate-pyproject",
 ]
@@ -223,8 +231,14 @@ all-plugins = [
      # Pretty Good Privacy (PGP) Provides mailto:// and deltachat:// support
     "PGPy",
 
+    # Provides blink1:// support
+    "hidapi",
+
     # Provides smpp:// support
     "smpplib",
+
+    # For xmpp:// support
+    "slixmpp >= 1.10.0",
 ]
 windows = [
     "pywin32",
@@ -283,24 +297,6 @@ exclude = [
   "venv",
 ]
 
-[tool.black]
-# Added for backwards support and alternative cleanup
-# when needed
-line-length = 79  # Respecting BSD-style 79-char limit
-target-version = ['py39']
-extend-exclude = '''
-/(
-  tests/data \
-  bin \
-  build \
-  dist \
-  .eggs \
-  .tox \
-  .local \
-  .venv \
-  venv
-)
-'''
 
 [tool.ruff.lint]
 select = [
@@ -317,12 +313,6 @@ select = [
   "RUF",  # Ruff-native rules
 ]
 
-extend-select = [
-   "E501",   # Spacing
-   "Q000",   # Quoting
-   "I"  # Automatically sort imports with isort logic
-]
-
 ignore = [
   "D100",    # missing docstring in public module
   "D104",    # missing docstring in public package
@@ -334,6 +324,7 @@ ignore = [
 
   # The following needs to be supported at some point and is of great value
   "RUF012",  # typing.ClassVar implimentation
+  "RUF029",  # Use of async without await or async subcalls
   "UP032",   # This is a massive undertaking and requires a massive rewrite
              # of test cases; this will take a while to fix, so turning off
              # for now
@@ -395,4 +386,3 @@ exclude_lines = [
 [tool.coverage.xml]
 # Ensure GitHub Action can find a predictable file
 output = "coverage.xml"
-

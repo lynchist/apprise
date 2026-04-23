@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -235,15 +235,17 @@ class NotifyNotifiarr(NotifyBase):
         return "{schema}://{apikey}/{targets}?{params}".format(
             schema=self.secure_protocol,
             apikey=self.pprint(self.apikey, privacy, safe=""),
-            targets="/".join([
-                NotifyNotifiarr.quote(x, safe="+#@")
-                for x in chain(
-                    # Channels
-                    [f"#{x}" for x in self.targets["channels"]],
-                    # Pass along the same invalid entries as were provided
-                    self.targets["invalid"],
-                )
-            ]),
+            targets="/".join(
+                [
+                    NotifyNotifiarr.quote(x, safe="+#@")
+                    for x in chain(
+                        # Channels
+                        [f"#{x}" for x in self.targets["channels"]],
+                        # Pass along the same invalid entries as were provided
+                        self.targets["invalid"],
+                    )
+                ]
+            ),
             params=NotifyNotifiarr.urlencode(params),
         )
 
@@ -374,11 +376,12 @@ class NotifyNotifiarr(NotifyBase):
                     "Failed to send Notifiarr %s notification: %serror=%s.",
                     status_str,
                     ", " if status_str else "",
-                    str(r.status_code),
+                    r.status_code,
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Return; we're done
                 return False

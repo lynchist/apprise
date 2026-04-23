@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -643,12 +643,14 @@ def test_notify_smseagle_plugin_result_list(mock_post):
     assert obj.notify("test") is True
 
     # However if one of the elements in the list is bad
-    okay_response.content = dumps({
-        "result": [
-            {"message_id": "748", "status": "ok"},
-            {"message_id": "749", "status": "error"},
-        ]
-    })
+    okay_response.content = dumps(
+        {
+            "result": [
+                {"message_id": "748", "status": "ok"},
+                {"message_id": "749", "status": "error"},
+            ]
+        }
+    )
 
     # Assign our mock object our return value
     mock_post.return_value = okay_response

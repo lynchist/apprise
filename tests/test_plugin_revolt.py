@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -49,13 +49,15 @@ logging.disable(logging.CRITICAL)
 TEST_VAR_DIR = os.path.join(os.path.dirname(__file__), "var")
 
 # Prepare a Valid Response
-REVOLT_GOOD_RESPONSE = dumps({
-    "_id": "AAAPWPMMQA2JJB59BR2EASWWWW",
-    "nonce": "01HPWPPMDJABC2FTDG54CBKKKS",
-    "channel": "00000000000000000000000000",
-    "author": "011244Q9S8NCS67KMM9543W7JJ",
-    "content": "test",
-})
+REVOLT_GOOD_RESPONSE = dumps(
+    {
+        "_id": "AAAPWPMMQA2JJB59BR2EASWWWW",
+        "nonce": "01HPWPPMDJABC2FTDG54CBKKKS",
+        "channel": "00000000000000000000000000",
+        "author": "011244Q9S8NCS67KMM9543W7JJ",
+        "content": "test",
+    }
+)
 
 # Our Testing URLs
 apprise_url_tests = (

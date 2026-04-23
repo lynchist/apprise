@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -168,6 +168,7 @@ class NotifyMQTT(NotifyBase):
             "topic": {
                 "name": _("Target Queue"),
                 "type": "string",
+                "required": True,
                 "map_to": "targets",
             },
             "targets": {
@@ -181,9 +182,6 @@ class NotifyMQTT(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "alias_of": "targets",
-            },
             "qos": {
                 "name": _("QOS"),
                 "type": "int",
@@ -210,6 +208,9 @@ class NotifyMQTT(NotifyBase):
                 "name": _("Retain Messages"),
                 "type": "bool",
                 "default": False,
+            },
+            "to": {
+                "alias_of": "targets",
             },
         },
     )
@@ -650,3 +651,10 @@ class NotifyMQTT(NotifyBase):
             pass
 
         return candidates
+
+    @staticmethod
+    def runtime_deps():
+        """Return a tuple of top-level Python package names that this plugin
+        imported as optional runtime dependencies.
+        """
+        return ("paho",)

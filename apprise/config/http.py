@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -39,12 +39,12 @@ from .base import ConfigBase
 # text/x-yaml
 # application/yaml
 # application/x-yaml
-MIME_IS_YAML = re.compile("(text|application)/(x-)?yaml", re.I)
+MIME_IS_YAML = re.compile(r"(text|application)/(x-)?yaml", re.I)
 
 # Support TEXT formats
 # text/plain
 # text/html
-MIME_IS_TEXT = re.compile("text/(plain|html)", re.I)
+MIME_IS_TEXT = re.compile(r"text/(plain|html)", re.I)
 
 
 class ConfigHTTP(ConfigBase):
@@ -188,7 +188,6 @@ class ConfigHTTP(ConfigBase):
                 timeout=self.request_timeout,
                 stream=True,
             ) as r:
-
                 # Handle Errors
                 r.raise_for_status()
 
@@ -204,7 +203,6 @@ class ConfigHTTP(ConfigBase):
                     self.max_buffer_size > 0
                     and file_size > self.max_buffer_size
                 ):
-
                     # Provide warning of data truncation
                     self.logger.error(
                         "HTTP config response exceeds maximum buffer length "
@@ -235,12 +233,10 @@ class ConfigHTTP(ConfigBase):
                 )
                 if self.config_format is None and content_type:
                     if MIME_IS_YAML.match(content_type) is not None:
-
                         # YAML data detected based on header content
                         self.default_config_format = ConfigFormat.YAML
 
                     elif MIME_IS_TEXT.match(content_type) is not None:
-
                         # TEXT data detected based on header content
                         self.default_config_format = ConfigFormat.TEXT
 

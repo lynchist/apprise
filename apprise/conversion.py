@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -176,7 +176,6 @@ class HTMLConverter(HTMLParser):
 
         # initialize our previous flag
         if self._do_store:
-
             # Tidy our whitespace
             content = self.WS_TRIM.sub(" ", data)
             self._result.append(content)
@@ -198,8 +197,6 @@ class HTMLConverter(HTMLParser):
         elif tag == "hr":
             if self._result and isinstance(self._result[-1], str):
                 self._result[-1] = self._result[-1].rstrip(" ")
-            else:
-                pass
 
             self._result.append("\n---\n")
 

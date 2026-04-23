@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -132,7 +132,12 @@ class FCMPriorityManager:
             FCMMode.OAuth2: {
                 "message": {
                     "android": {"priority": NotificationPriority.HIGH},
-                    "apns": {"headers": {"apns-priority": "10"}},
+                    "apns": {
+                        "headers": {
+                            "apns-priority": "10",
+                            "apns-push-type": "alert",
+                        }
+                    },
                     "webpush": {"headers": {"Urgency": "high"}},
                 }
             },
@@ -144,7 +149,12 @@ class FCMPriorityManager:
             FCMMode.OAuth2: {
                 "message": {
                     "android": {"priority": NotificationPriority.HIGH},
-                    "apns": {"headers": {"apns-priority": "10"}},
+                    "apns": {
+                        "headers": {
+                            "apns-priority": "10",
+                            "apns-push-type": "alert",
+                        }
+                    },
                     "webpush": {"headers": {"Urgency": "high"}},
                 }
             },

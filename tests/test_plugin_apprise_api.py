@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -282,7 +282,6 @@ def test_plugin_apprise_api_urls():
     AppriseURLTester(tests=apprise_url_tests).run_all()
 
 
-
 @mock.patch("requests.post")
 def test_notify_apprise_api_payload_check(mock_post):
     """NotifyAppriseAPI() payload checks"""
@@ -295,9 +294,7 @@ def test_notify_apprise_api_payload_check(mock_post):
     # Assign our mock object our return value
     mock_post.return_value = okay_response
 
-    obj = Apprise.instantiate(
-        "apprise://user@localhost/mytoken1/?method=form"
-    )
+    obj = Apprise.instantiate("apprise://user@localhost/mytoken1/?method=form")
     assert isinstance(obj, NotifyAppriseAPI)
 
     # Test URL with Attachment
@@ -328,9 +325,7 @@ def test_notify_apprise_api_payload_check(mock_post):
 
     mock_post.reset_mock()
 
-    obj = Apprise.instantiate(
-        "apprise://user@localhost/mytoken1/?method=json"
-    )
+    obj = Apprise.instantiate("apprise://user@localhost/mytoken1/?method=json")
     assert isinstance(obj, NotifyAppriseAPI)
 
     assert (

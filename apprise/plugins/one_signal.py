@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -148,19 +148,23 @@ class NotifyOneSignal(NotifyBase):
     template_args = dict(
         NotifyBase.template_args,
         **{
-            "to": {
-                "alias_of": "targets",
+            "template": {
+                "alias_of": "template",
+            },
+            "subtitle": {
+                "name": _("Subtitle"),
+                "type": "string",
+            },
+            "language": {
+                "name": _("Language"),
+                "type": "string",
+                "default": "en",
             },
             "image": {
                 "name": _("Include Image"),
                 "type": "bool",
                 "default": True,
                 "map_to": "include_image",
-            },
-            "batch": {
-                "name": _("Batch Mode"),
-                "type": "bool",
-                "default": False,
             },
             "contents": {
                 "name": _("Enable Contents"),
@@ -174,17 +178,13 @@ class NotifyOneSignal(NotifyBase):
                 "default": False,
                 "map_to": "decode_tpl_args",
             },
-            "template": {
-                "alias_of": "template",
+            "to": {
+                "alias_of": "targets",
             },
-            "subtitle": {
-                "name": _("Subtitle"),
-                "type": "string",
-            },
-            "language": {
-                "name": _("Language"),
-                "type": "string",
-                "default": "en",
+            "batch": {
+                "name": _("Batch Mode"),
+                "type": "bool",
+                "default": False,
             },
         },
     )
@@ -289,8 +289,8 @@ class NotifyOneSignal(NotifyBase):
             raise TypeError(msg)
 
         # Sort our targets
-        for _target in parse_list(targets):
-            target = _target.strip()
+        for target_ in parse_list(targets):
+            target = target_.strip()
             if len(target) < 2:
                 self.logger.debug(f"Ignoring OneSignal Entry: {target}")
                 continue
@@ -298,7 +298,6 @@ class NotifyOneSignal(NotifyBase):
             if target.startswith(
                 NotifyOneSignal.template_tokens["target_user"]["prefix"]
             ):
-
                 self.targets[OneSignalCategory.USER].append(target)
                 self.logger.debug(
                     "Detected OneSignal UserID:"
@@ -309,7 +308,6 @@ class NotifyOneSignal(NotifyBase):
             if target.startswith(
                 NotifyOneSignal.template_tokens["target_segment"]["prefix"]
             ):
-
                 self.targets[OneSignalCategory.SEGMENT].append(target)
                 self.logger.debug(
                     "Detected OneSignal Include Segment:"
@@ -400,15 +398,19 @@ class NotifyOneSignal(NotifyBase):
 
         # Set our data if defined
         if self.custom_data:
-            payload.update({
-                "custom_data": self.custom_data,
-            })
+            payload.update(
+                {
+                    "custom_data": self.custom_data,
+                }
+            )
 
         # Set our postback data if defined
         if self.postback_data:
-            payload.update({
-                "data": self.postback_data,
-            })
+            payload.update(
+                {
+                    "data": self.postback_data,
+                }
+            )
 
         if title:
             # Display our title if defined
@@ -421,11 +423,13 @@ class NotifyOneSignal(NotifyBase):
             )
 
         if self.subtitle:
-            payload.update({
-                "subtitle": {
-                    self.language: self.subtitle,
-                },
-            })
+            payload.update(
+                {
+                    "subtitle": {
+                        self.language: self.subtitle,
+                    },
+                }
+            )
 
         # Acquire our large_icon image URL (if set)
         image_url = (
@@ -489,7 +493,8 @@ class NotifyOneSignal(NotifyBase):
 
                         self.logger.debug(
                             "Response Details:\r\n%r",
-                            (r.content or b"")[:2000])
+                            (r.content or b"")[:2000],
+                        )
 
                         has_error = True
 
@@ -501,7 +506,7 @@ class NotifyOneSignal(NotifyBase):
                         "A Connection error occurred sending OneSignal "
                         "notification."
                     )
-                    self.logger.debug("Socket Exception: %s", str(e))
+                    self.logger.debug("Socket Exception: %s", e)
 
                     has_error = True
 
@@ -623,7 +628,7 @@ class NotifyOneSignal(NotifyBase):
             return total_targets
 
         # Normal batch count; just count the targets
-        return sum([len(m) for _, m in self.targets.items()])
+        return sum(len(m) for _, m in self.targets.items())
 
     @staticmethod
     def parse_url(url):

@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -280,8 +280,8 @@ def test_apprise_attachment():
     assert aa.size() == 0
 
 
-@mock.patch("requests.get")
-def test_apprise_attachment_truncate(mock_get):
+@mock.patch("requests.request")
+def test_apprise_attachment_truncate(mock_request):
     """
     API: AppriseAttachment when truncation in place
 
@@ -292,7 +292,7 @@ def test_apprise_attachment_truncate(mock_get):
     response.status_code = requests.codes.ok
 
     # Prepare Mock
-    mock_get.return_value = response
+    mock_request.return_value = response
 
     # our Apprise Object
     ap_obj = Apprise()
@@ -314,18 +314,19 @@ def test_apprise_attachment_truncate(mock_get):
     assert aa.add(join(TEST_VAR_DIR, "apprise-test.gif"))
     assert aa.add(join(TEST_VAR_DIR, "apprise-test.png"))
 
-    assert mock_get.call_count == 0
+    assert mock_request.call_count == 0
     assert ap_obj.notify(body="body", title="title", attach=aa)
 
-    assert mock_get.call_count == 1
+    assert mock_request.call_count == 1
 
     # Our first item was truncated, so only 1 attachment
-    details = mock_get.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "GET"
     dataset = json.loads(details[1]["data"])
     assert len(dataset["attachments"]) == 1
 
     # Reset our object
-    mock_get.reset_mock()
+    mock_request.reset_mock()
 
     # our Apprise Object
     ap_obj = Apprise()
@@ -340,13 +341,14 @@ def test_apprise_attachment_truncate(mock_get):
     assert aa.add(join(TEST_VAR_DIR, "apprise-test.gif"))
     assert aa.add(join(TEST_VAR_DIR, "apprise-test.png"))
 
-    assert mock_get.call_count == 0
+    assert mock_request.call_count == 0
     assert ap_obj.notify(body="body", title="title", attach=aa)
 
-    assert mock_get.call_count == 1
+    assert mock_request.call_count == 1
 
     # Our item was not truncated, so all attachments
-    details = mock_get.call_args_list[0]
+    details = mock_request.call_args_list[0]
+    assert details[0][0] == "GET"
     dataset = json.loads(details[1]["data"])
     assert len(dataset["attachments"]) == 2
 
@@ -403,22 +405,27 @@ def test_attachment_matrix_dynamic_importing(tmpdir):
     base.join("__init__.py").write("")
 
     # Test no app_id
-    base.join("AttachBadFile1.py").write(cleandoc("""
+    base.join("AttachBadFile1.py").write(
+        cleandoc("""
         class AttachBadFile1:
             pass
-        """))
+        """)
+    )
 
     # No class of the same name
-    base.join("AttachBadFile2.py").write(cleandoc("""
+    base.join("AttachBadFile2.py").write(
+        cleandoc("""
         class BadClassName:
             pass
-        """))
+        """)
+    )
 
     # Exception thrown
     base.join("AttachBadFile3.py").write("""raise ImportError()""")
 
     # Utilizes a schema:// already occupied (as string)
-    base.join("AttachGoober.py").write(cleandoc("""
+    base.join("AttachGoober.py").write(
+        cleandoc("""
         from apprise import AttachBase
         class AttachGoober(AttachBase):
             # This class tests the fact we have a new class name, but we're
@@ -429,10 +436,12 @@ def test_attachment_matrix_dynamic_importing(tmpdir):
 
             # The default secure protocol
             secure_protocol = 'https'
-        """))
+        """)
+    )
 
     # Utilizes a schema:// already occupied (as tuple)
-    base.join("AttachBugger.py").write(cleandoc("""
+    base.join("AttachBugger.py").write(
+        cleandoc("""
         from apprise import AttachBase
         class AttachBugger(AttachBase):
             # This class tests the fact we have a new class name, but we're
@@ -443,6 +452,7 @@ def test_attachment_matrix_dynamic_importing(tmpdir):
 
             # The default secure protocol
             secure_protocol = ('https', 'bugger-tests')
-        """))
+        """)
+    )
 
     A_MGR.load_modules(path=str(base), name=module_name)

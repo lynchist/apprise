@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -162,7 +162,8 @@ class AttachMemory(AttachBase):
 
     def invalidate(self):
         """Removes data."""
-        self._data.truncate(0)
+        if not self._data.closed:
+            self._data.truncate(0)
         return
 
     def exists(self):

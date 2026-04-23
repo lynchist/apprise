@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -299,10 +299,12 @@ def test_plugin_pushsafer_general(mock_post):
     # Prepare Mock
     mock_post.return_value = requests.Request()
     mock_post.return_value.status_code = requests.codes.ok
-    mock_post.return_value.content = dumps({
-        "status": 1,
-        "success": "okay",
-    })
+    mock_post.return_value.content = dumps(
+        {
+            "status": 1,
+            "success": "okay",
+        }
+    )
 
     # Exception should be thrown about the fact no private key was specified
     with pytest.raises(TypeError):

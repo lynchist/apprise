@@ -25,14 +25,15 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Unit tests for :mod:`apprise.utils.sanitize`.
-"""
+"""Unit tests for :mod:`apprise.utils.sanitize`."""
 
 from __future__ import annotations
 
 from hashlib import sha256
 import logging
 import sys
+
+import pytest
 
 from apprise.utils.sanitize import SanitizeOptions, sanitize_payload
 
@@ -54,7 +55,7 @@ def test_sanitize_payload_passthrough_primitives() -> None:
     assert sanitize_payload(True) is True
     assert sanitize_payload(False) is False
     assert sanitize_payload(123) == 123
-    assert sanitize_payload(3.14) == 3.14
+    assert sanitize_payload(3.14) == pytest.approx(3.14)
 
 
 def test_sanitize_payload_small_string_passthrough() -> None:

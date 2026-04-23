@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -109,6 +109,47 @@ apprise_url_tests = (
         },
     ),
     (
+        (
+            "slack://username@xoxe.xoxb-1234-1234-abc124/#nuxref?footer=no"
+            "&timestamp=yes"
+        ),
+        {
+            "instance": NotifySlack,
+            "requests_response_text": {
+                "ok": True,
+                "message": "",
+            },
+        },
+    ),
+    (
+        (
+            "slack://username@xoxe.xoxp-1234-1234-abc124/#nuxref?footer=yes"
+            "&timestamp=no"
+        ),
+        {
+            "instance": NotifySlack,
+            "requests_response_text": {
+                "ok": True,
+                "message": "",
+            },
+        },
+    ),
+    # Test using a rotating bot-token as argument
+    (
+        (
+            "slack://?token=xoxe.xoxb-1234-1234-abc124&to=#nuxref&footer=no"
+            "&user=test"
+        ),
+        {
+            "instance": NotifySlack,
+            "requests_response_text": {
+                "ok": True,
+                "message": "",
+            },
+            "privacy_url": "slack://test@x...4/nuxref/",
+        },
+    ),
+    (
         "slack://T1JJ3T3L2/A1BRTD4JD/TIiajkdnlazkcOXrIdevi7FQ/+id/@id/",
         {
             # + encoded id,
@@ -130,8 +171,10 @@ apprise_url_tests = (
         },
     ),
     (
-        ("slack://username@T1JJ3T3L2/A1BRTD4JD/"
-         "TIiajkdnlazkcOXrIdevi7FQ/#nuxref"),
+        (
+            "slack://username@T1JJ3T3L2/A1BRTD4JD/"
+            "TIiajkdnlazkcOXrIdevi7FQ/#nuxref"
+        ),
         {
             "instance": NotifySlack,
             "requests_response_text": "ok",
@@ -157,8 +200,10 @@ apprise_url_tests = (
     ),
     # Specify Token and channels on argument string (no username)
     (
-        ("slack://?token=T1JJ3T3L2/A1BRTD4JD"
-         "/TIiajkdnlazkcOXrIdevi7FQ/&to=#chan"),
+        (
+            "slack://?token=T1JJ3T3L2/A1BRTD4JD"
+            "/TIiajkdnlazkcOXrIdevi7FQ/&to=#chan"
+        ),
         {
             "instance": NotifySlack,
             "requests_response_text": "ok",
@@ -166,8 +211,10 @@ apprise_url_tests = (
     ),
     # Test webhook that doesn't have a proper response
     (
-        ("slack://username@T1JJ3T3L2/A1BRTD4JD/"
-         "TIiajkdnlazkcOXrIdevi7FQ/#nuxref"),
+        (
+            "slack://username@T1JJ3T3L2/A1BRTD4JD/"
+            "TIiajkdnlazkcOXrIdevi7FQ/#nuxref"
+        ),
         {
             "instance": NotifySlack,
             "requests_response_text": "fail",
@@ -179,7 +226,8 @@ apprise_url_tests = (
     (
         (
             "slack://username@xoxb-1234-1234-abc124/#nuxref?footer=no"
-            "&timestamp=yes"),
+            "&timestamp=yes"
+        ),
         {
             "instance": NotifySlack,
             "requests_response_text": {
@@ -191,7 +239,8 @@ apprise_url_tests = (
     (
         (
             "slack://username@xoxb-1234-1234-abc124/#nuxref?footer=yes"
-            "&timestamp=yes"),
+            "&timestamp=yes"
+        ),
         {
             "instance": NotifySlack,
             "requests_response_text": {
@@ -203,7 +252,8 @@ apprise_url_tests = (
     (
         (
             "slack://username@xoxb-1234-1234-abc124/#nuxref?footer=yes"
-            "&timestamp=no"),
+            "&timestamp=no"
+        ),
         {
             "instance": NotifySlack,
             "requests_response_text": {
@@ -215,7 +265,8 @@ apprise_url_tests = (
     (
         (
             "slack://username@xoxb-1234-1234-abc124/#nuxref?footer=yes"
-            "&timestamp=no"),
+            "&timestamp=no"
+        ),
         {
             "instance": NotifySlack,
             "requests_response_text": {
@@ -477,11 +528,13 @@ def test_plugin_slack_oauth_access_token(mock_request):
     token = "xo-invalid"
 
     request = mock.Mock()
-    request.content = dumps({
-        "ok": True,
-        "message": "",
-        "channel": "C123456",
-    })
+    request.content = dumps(
+        {
+            "ok": True,
+            "message": "",
+            "channel": "C123456",
+        }
+    )
     request.status_code = requests.codes.ok
 
     # We'll fail to validate the access_token
@@ -490,6 +543,9 @@ def test_plugin_slack_oauth_access_token(mock_request):
 
     # Generate a (valid) bot token
     token = "xoxb-1234-1234-abc124"
+
+    # Generate a (valid) rotating bot token
+    rotating_token = "xoxe.xoxb-1234-1234-abc124"
 
     # Prepare Mock
     mock_request.return_value = request
@@ -501,28 +557,46 @@ def test_plugin_slack_oauth_access_token(mock_request):
     # apprise room was found
     assert obj.send(body="test") is True
 
+    # Validate rotating token is accepted too
+    obj = NotifySlack(access_token=rotating_token, targets="#apprise")
+    assert isinstance(obj, NotifySlack) is True
+    assert isinstance(obj.url(), str) is True
+    assert obj.send(body="test") is True
+
+    # A poorly formatted xoxe prefix should still be rejected
+    with pytest.raises(TypeError):
+        NotifySlack(access_token="xoxe.xo-invalid", targets="#apprise")
+
     # Test Valid Attachment
     mock_request.reset_mock()
     mock_request.side_effect = [
         request,
-        mock.Mock(**{
-            "content": dumps({
-                "ok": True,
-                "upload_url": "https://files.slack.com/upload/v1/ABC123",
-                "file_id": "F123ABC456",
-            }),
-            "status_code": requests.codes.ok,
-        }),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "upload_url": "https://files.slack.com/upload/v1/ABC123",
+                        "file_id": "F123ABC456",
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
         mock.Mock(
             **{"content": b"OK - 123", "status_code": requests.codes.ok}
         ),
-        mock.Mock(**{
-            "content": dumps({
-                "ok": True,
-                "files": [{"id": "F123ABC456", "title": "slack-test"}],
-            }),
-            "status_code": requests.codes.ok,
-        }),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "files": [{"id": "F123ABC456", "title": "slack-test"}],
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
     ]
 
     path = os.path.join(TEST_VAR_DIR, "apprise-test.gif")
@@ -608,12 +682,16 @@ def test_plugin_slack_oauth_access_token(mock_request):
     mock_request.reset_mock()
     mock_request.side_effect = [
         request,
-        mock.Mock(**{
-            "content": dumps({
-                "ok": False,
-            }),
-            "status_code": requests.codes.internal_server_error,
-        }),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": False,
+                    }
+                ),
+                "status_code": requests.codes.internal_server_error,
+            }
+        ),
     ]
     path = os.path.join(TEST_VAR_DIR, "apprise-test.gif")
     attach = AppriseAttachment(path)
@@ -638,10 +716,12 @@ def test_plugin_slack_oauth_access_token(mock_request):
     # As a result, we'll fail to send our notification
     assert obj.send(body="test", attach=attach) is False
 
-    request.content = dumps({
-        "ok": False,
-        "message": "We failed",
-    })
+    request.content = dumps(
+        {
+            "ok": False,
+            "message": "We failed",
+        }
+    )
 
     # A response from Slack (even with a 200 response) still
     # results in a failure:
@@ -777,10 +857,12 @@ def test_plugin_slack_send_by_email(mock_get, mock_request):
     #
     # Now test a case where we can't look up the valid email
     #
-    request.content = dumps({
-        "ok": False,
-        "message": "",
-    })
+    request.content = dumps(
+        {
+            "ok": False,
+            "message": "",
+        }
+    )
 
     # Reset our mock object
     mock_request.reset_mock()
@@ -1099,41 +1181,60 @@ def test_plugin_slack_file_upload_success(mock_request):
 
     # Simulate all successful Slack API responses
     mock_request.side_effect = [
-        mock.Mock(**{
-            "content": dumps({
-                "ok": True,
-                "channel": "C123456",
-            }),
-            "status_code": requests.codes.ok,
-        }),
-        mock.Mock(**{
-            "content": dumps({
-                "ok": True,
-                "upload_url": "https://files.slack.com/upload/v1/ABC123",
-                "file_id": "F123ABC456",
-            }),
-            "status_code": requests.codes.ok,
-        }),
-        mock.Mock(**{
-            "content": b"OK - 123",
-            "status_code": requests.codes.ok,
-        }),
-        mock.Mock(**{
-            "content": dumps({
-                "ok": True,
-                "files": [{"id": "F123ABC456", "title": "apprise-test"}],
-            }),
-            "status_code": requests.codes.ok,
-        }),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "channel": "C123456",
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "upload_url": "https://files.slack.com/upload/v1/ABC123",
+                        "file_id": "F123ABC456",
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
+        mock.Mock(
+            **{
+                "content": b"OK - 123",
+                "status_code": requests.codes.ok,
+            }
+        ),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "files": [
+                            {"id": "F123ABC456", "title": "apprise-test"}
+                        ],
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
     ]
 
     obj = NotifySlack(access_token=token, targets=["#general"])
-    assert obj.notify(
-        body="Success path test",
-        title="Slack Upload OK",
-        notify_type=NotifyType.INFO,
-        attach=attach,
-    ) is True
+    assert (
+        obj.notify(
+            body="Success path test",
+            title="Slack Upload OK",
+            notify_type=NotifyType.INFO,
+            attach=attach,
+        )
+        is True
+    )
 
 
 @mock.patch("requests.request")
@@ -1151,33 +1252,47 @@ def test_plugin_slack_file_upload_fails_missing_files(mock_request):
     # 4. files.completeUploadExternal returns missing/empty 'files'
 
     mock_request.side_effect = [
-        mock.Mock(**{
-            "content": dumps({
-                "ok": True,
-                "channel": "C555555",
-            }),
-            "status_code": requests.codes.ok,
-        }),
-        mock.Mock(**{
-            "content": dumps({
-                "ok": True,
-                "upload_url": "https://files.slack.com/upload/v1/X99999",
-                "file_id": "F999XYZ888",
-            }),
-            "status_code": requests.codes.ok,
-        }),
-        mock.Mock(**{
-            "content": b"OK - 2048",
-            "status_code": requests.codes.ok,
-        }),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "channel": "C555555",
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "upload_url": "https://files.slack.com/upload/v1/X99999",
+                        "file_id": "F999XYZ888",
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
+        mock.Mock(
+            **{
+                "content": b"OK - 2048",
+                "status_code": requests.codes.ok,
+            }
+        ),
         # <== This response will trigger the error condition
-        mock.Mock(**{
-            "content": dumps({
-                "ok": True,
-                "files": [],
-            }),
-            "status_code": requests.codes.ok,
-        }),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "files": [],
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
     ]
 
     obj = NotifySlack(access_token=token, targets=["#fail-channel"])
@@ -1189,3 +1304,60 @@ def test_plugin_slack_file_upload_fails_missing_files(mock_request):
     )
 
     assert result is False
+
+
+@mock.patch("requests.request")
+def test_plugin_slack_attach_memory(mock_request):
+    """Regression: AttachMemory must be sendable without OSError."""
+    from apprise.attachment.memory import AttachMemory
+
+    token = "xoxb-1234-1234-abc124"
+
+    mock_request.side_effect = [
+        mock.Mock(
+            **{
+                "content": dumps({"ok": True, "channel": "C123456"}),
+                "status_code": requests.codes.ok,
+            }
+        ),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "upload_url": "https://files.slack.com/upload/v1/ABC123",
+                        "file_id": "F123ABC456",
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
+        mock.Mock(
+            **{
+                "content": b"OK - 100",
+                "status_code": requests.codes.ok,
+            }
+        ),
+        mock.Mock(
+            **{
+                "content": dumps(
+                    {
+                        "ok": True,
+                        "files": [{"id": "F123ABC456", "title": "report"}],
+                    }
+                ),
+                "status_code": requests.codes.ok,
+            }
+        ),
+    ]
+
+    obj = NotifySlack(access_token=token, targets=["#general"])
+
+    mem = AttachMemory(
+        content=b"<html><body><h1>Test</h1></body></html>",
+        name="report.html",
+        mimetype="text/html",
+    )
+
+    assert obj.notify(body="Test", attach=mem) is True
+    assert mock_request.call_count >= 1

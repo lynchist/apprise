@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -39,18 +39,22 @@ from apprise.plugins.sfr import NotifySFR
 
 logging.disable(logging.CRITICAL)
 
-SFR_GOOD_RESPONSE = json.dumps({
-    "success": True,
-    "reponse": 8888888,
-})
+SFR_GOOD_RESPONSE = json.dumps(
+    {
+        "success": True,
+        "reponse": 8888888,
+    }
+)
 
-SFR_BAD_RESPONSE = json.dumps({
-    "success": False,
-    "errorCode": "THIS_IS_AN_ERROR",
-    "errorDetail": "Appel api en erreur",
-    "fatal": True,
-    "invalidParams": True,
-})
+SFR_BAD_RESPONSE = json.dumps(
+    {
+        "success": False,
+        "errorCode": "THIS_IS_AN_ERROR",
+        "errorDetail": "Appel api en erreur",
+        "fatal": True,
+        "invalidParams": True,
+    }
+)
 
 # Our Testing URLs
 apprise_url_tests = (
@@ -163,8 +167,9 @@ apprise_url_tests = (
         },
     ),
     (
-        "sfr://service_id:service_password@{}/{}?voice=laura8k&lang=en_US"
-        .format("0" * 3, "0" * 10),
+        "sfr://service_id:service_password@{}/{}?voice=laura8k&lang=en_US".format(
+            "0" * 3, "0" * 10
+        ),
         {
             # a valid group
             "instance": NotifySFR,

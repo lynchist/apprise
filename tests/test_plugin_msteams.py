@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -94,8 +94,9 @@ apprise_url_tests = (
     ),
     # Support native URLs
     (
-        "https://outlook.office.com/webhook/{}@{}/IncomingWebhook/{}/{}"
-        .format(UUID4, UUID4, "k" * 32, UUID4),
+        "https://outlook.office.com/webhook/{}@{}/IncomingWebhook/{}/{}".format(
+            UUID4, UUID4, "k" * 32, UUID4
+        ),
         {
             # All tokens provided - we're good
             "instance": NotifyMSTeams,
@@ -105,8 +106,9 @@ apprise_url_tests = (
     ),
     # Support New Native URLs
     (
-        "https://myteam.webhook.office.com/webhookb2/{}@{}/IncomingWebhook/{}/{}"
-        .format(UUID4, UUID4, "m" * 32, UUID4),
+        "https://myteam.webhook.office.com/webhookb2/{}@{}/IncomingWebhook/{}/{}".format(
+            UUID4, UUID4, "m" * 32, UUID4
+        ),
         {
             # All tokens provided - we're good
             "instance": NotifyMSTeams,

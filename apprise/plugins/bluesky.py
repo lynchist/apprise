@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -180,7 +180,6 @@ class NotifyBlueSky(NotifyBase):
             # We need to upload our payload first so that we can source it
             # in remaining messages
             for no, attachment in enumerate(attach, start=1):
-
                 # Perform some simple error checking
                 if not attachment:
                     # We could not access the attachment
@@ -248,26 +247,28 @@ class NotifyBlueSky(NotifyBase):
 
         if blobs:
             for no, blob in enumerate(blobs, start=1):
-                _payload = payload.copy()
+                payload_ = payload.copy()
                 if no > 1:
                     #
                     # multiple instances
                     #
                     # 1. update createdAt time
                     # 2. Change text to identify image no
-                    _payload["record"]["createdAt"] = datetime.now(
+                    payload_["record"]["createdAt"] = datetime.now(
                         tz=timezone.utc
                     ).strftime("%FT%XZ")
-                    _payload["record"]["text"] = f"{no:02d}/{len(blobs):02d}"
+                    payload_["record"]["text"] = f"{no:02d}/{len(blobs):02d}"
 
-                _payload["record"]["embed"] = {
-                    "images": [{
-                        "image": blob[0],
-                        "alt": blob[1],
-                    }],
+                payload_["record"]["embed"] = {
+                    "images": [
+                        {
+                            "image": blob[0],
+                            "alt": blob[1],
+                        }
+                    ],
                     "$type": "app.bsky.embed.images",
                 }
-                payloads.append(_payload)
+                payloads.append(payload_)
         else:
             payloads.append(payload)
 
@@ -611,7 +612,8 @@ class NotifyBlueSky(NotifyBase):
                 )
 
                 self.logger.debug(
-                    "Response Details:\r\n%r", (r.content or b"")[:2000])
+                    "Response Details:\r\n%r", (r.content or b"")[:2000]
+                )
 
                 # Mark our failure
                 return (False, content)

@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -124,10 +124,10 @@ def test_apprise_cli_nux_env(tmpdir):
     )
     assert result.exit_code == 0
 
-    with mock.patch("requests.post") as mock_post:
+    with mock.patch("requests.request") as mock_request:
         # Prepare Mock
-        mock_post.return_value = requests.Request()
-        mock_post.return_value.status_code = requests.codes.ok
+        mock_request.return_value = requests.Request()
+        mock_request.return_value.status_code = requests.codes.ok
 
         result = runner.invoke(
             cli.main,
@@ -145,18 +145,18 @@ def test_apprise_cli_nux_env(tmpdir):
         assert result.exit_code == 0
 
         # Test our call count
-        assert mock_post.call_count == 1
+        assert mock_request.call_count == 1
+        details = mock_request.call_args_list[0]
+        assert details[0][0] == "POST"
 
         # Our string is now escaped correctly
         assert (
-            json.loads(mock_post.call_args_list[0][1]["data"]).get(
-                "message", ""
-            )
+            json.loads(details[1]["data"]).get("message", "")
             == "test body\nsNewLine"
         )
 
         # Reset
-        mock_post.reset_mock()
+        mock_request.reset_mock()
 
         result = runner.invoke(
             cli.main,
@@ -173,13 +173,13 @@ def test_apprise_cli_nux_env(tmpdir):
         assert result.exit_code == 0
 
         # Test our call count
-        assert mock_post.call_count == 1
+        assert mock_request.call_count == 1
+        details = mock_request.call_args_list[0]
+        assert details[0][0] == "POST"
 
         # Our string is now escaped correctly
         assert (
-            json.loads(mock_post.call_args_list[0][1]["data"]).get(
-                "message", ""
-            )
+            json.loads(details[1]["data"]).get("message", "")
             == "test body\\nsNewLine"
         )
 
@@ -917,13 +917,15 @@ def test_apprise_cli_modules(tmpdir):
     #
     notify_cmod_base = tmpdir.mkdir("cli_modules")
     notify_cmod = notify_cmod_base.join("hook.py")
-    notify_cmod.write(cleandoc("""
+    notify_cmod.write(
+        cleandoc("""
     from apprise.decorators import notify
 
     @notify(on="climod")
     def mywrapper(body, title, notify_type, *args, **kwargs):
         pass
-    """))
+    """)
+    )
 
     result = runner.invoke(
         cli.main,
@@ -958,13 +960,15 @@ def test_apprise_cli_modules(tmpdir):
 
     # Test double hooks
     notify_cmod2 = notify_cmod_base.join("hook2.py")
-    notify_cmod2.write(cleandoc("""
+    notify_cmod2.write(
+        cleandoc("""
     from apprise.decorators import notify
 
     @notify(on="climod2")
     def mywrapper(body, title, notify_type, *args, **kwargs):
         pass
-    """))
+    """)
+    )
 
     result = runner.invoke(
         cli.main,
@@ -1094,12 +1098,16 @@ def test_apprise_cli_persistent_storage(tmpdir):
     assert result.exit_code == 0
 
     # our persist storage has not been created yet
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^1\.\s+[a-z0-9]{8}\s+0\.00B\s+unused\s+-\s+test://\s*",
-        _stdout,
+    stdout = result.stdout.strip()
+
+    # Click output can wrap based on terminal width, and storage backend
+    # sizes are not stable across Python/OS variations. Validate semantics.
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+unused\b",
+        stdout,
         re.MULTILINE,
     )
+    assert re.search(r"(?m)^\s*-\s+test://\s*$", stdout)
 
     # An invalid mode specified
     result = runner.invoke(
@@ -1191,10 +1199,10 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^1\.\s+[a-z0-9_-]{8}\s+81\.00B\s+active\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+active\b",
+        stdout,
         re.MULTILINE,
     )
 
@@ -1212,10 +1220,10 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^1\.\s+[a-z0-9_-]{8}\s+81\.00B\s+active\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+active\b",
+        stdout,
         re.MULTILINE,
     )
 
@@ -1254,10 +1262,10 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^1\.\s+[a-z0-9_-]{8}\s+81\.00B\s+active\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+active\b",
+        stdout,
         re.MULTILINE,
     )
 
@@ -1277,10 +1285,10 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries successfully again..
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^1\.\s+[a-z0-9_-]{8}\s+81\.00B\s+active\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+active\b",
+        stdout,
         re.MULTILINE,
     )
 
@@ -1302,10 +1310,10 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^1\.\s+[a-z0-9_-]{8}\s+81\.00B\s+active\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+active\b",
+        stdout,
         re.MULTILINE,
     )
 
@@ -1342,15 +1350,15 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^[0-9]\.\s+[a-z0-9_-]{8}\s+81\.00B\s+active\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+active\b",
+        stdout,
         re.MULTILINE,
     )
     assert re.match(
         r".*\s*[0-9]\.\s+namespace\s+0\.00B\s+stale.*",
-        _stdout,
+        stdout,
         (re.MULTILINE | re.DOTALL),
     )
 
@@ -1371,16 +1379,16 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^[0-9]\.\s+[a-z0-9_-]{8}\s+81\.00B\s+active\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+active\b",
+        stdout,
         re.MULTILINE,
     )
     assert (
         re.match(
             r".*\s*[0-9]\.\s+namespace\s+0\.00B\s+stale.*",
-            _stdout,
+            stdout,
             (re.MULTILINE | re.DOTALL),
         )
         is None
@@ -1417,18 +1425,18 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
+    stdout = result.stdout.strip()
     # back to unused state and 0 bytes
-    assert re.match(
-        r"^[0-9]\.\s+[a-z0-9_-]{8}\s+0\.00B\s+unused\s+-\s+test://$",
-        _stdout,
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+unused\b",
+        stdout,
         re.MULTILINE,
     )
     # namespace is gone now
     assert (
         re.match(
             r".*\s*[0-9]\.\s+namespace\s+0\.00B\s+stale.*",
-            _stdout,
+            stdout,
             (re.MULTILINE | re.DOTALL),
         )
         is None
@@ -1452,11 +1460,11 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
+    stdout = result.stdout.strip()
     # back to unused state and 0 bytes
     assert re.match(
         r"^[0-9]\.\s+[a-z0-9_-]{8}\s+0\.00B\s+unused\s+-\s+test://$",
-        _stdout,
+        stdout,
         re.MULTILINE,
     )
 
@@ -1496,10 +1504,10 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^1\.\s+[a-z0-9_-]{8}\s+81\.00B\s+active\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+active\b",
+        stdout,
         re.MULTILINE,
     )
 
@@ -1532,10 +1540,10 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # list our entries
     assert result.exit_code == 0
 
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^1\.\s+[a-z0-9_-]{8}\s+81\.00B\s+active\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+active\b",
+        stdout,
         re.MULTILINE,
     )
 
@@ -1575,10 +1583,10 @@ def test_apprise_cli_persistent_storage(tmpdir):
     # during testing only.
     # Until this can be resolved, this is the section of the test that
     # caused us to disable it in MS Windows
-    _stdout = result.stdout.strip()
-    assert re.match(
-        r"^1\.\s+[a-z0-9_-]{8}\s+0\.00B\s+unused\s+-\s+test://$",
-        _stdout,
+    stdout = result.stdout.strip()
+    assert re.search(
+        r"^1\.\s+[a-z0-9_-]{8}\s+\d+(?:\.\d{2})?[KMGT]?B\s+unused\b",
+        stdout,
         re.MULTILINE,
     )
 
@@ -1868,15 +1876,15 @@ def test_apprise_cli_print_help():
     assert result.exit_code == 0
 
 
-@mock.patch("requests.post")
-def test_apprise_cli_plugin_loading(mock_post, tmpdir):
+@mock.patch("requests.request")
+def test_apprise_cli_plugin_loading(mock_request, tmpdir):
     """
     CLI: --plugin-path (-P)
 
     """
     # Prepare Mock
-    mock_post.return_value = requests.Request()
-    mock_post.return_value.status_code = requests.codes.ok
+    mock_request.return_value = requests.Request()
+    mock_request.return_value.status_code = requests.codes.ok
 
     runner = CliRunner()
 
@@ -1936,9 +1944,11 @@ def test_apprise_cli_plugin_loading(mock_post, tmpdir):
     # Prepare ourselves a file to work with
     notify_hook_a_base = tmpdir.mkdir("random")
     notify_hook_a = notify_hook_a_base.join("myhook01.py")
-    notify_hook_a.write(cleandoc("""
+    notify_hook_a.write(
+        cleandoc("""
     raise ImportError
-    """))
+    """)
+    )
 
     result = runner.invoke(
         cli.main,
@@ -1964,9 +1974,11 @@ def test_apprise_cli_plugin_loading(mock_post, tmpdir):
 
     # Prepare ourselves a file to work with
     notify_hook_aa = notify_hook_a_base.join("myhook02.py")
-    notify_hook_aa.write(cleandoc("""
+    notify_hook_aa.write(
+        cleandoc("""
     garbage entry
-    """))
+    """)
+    )
 
     N_MGR.plugins()
     result = runner.invoke(
@@ -2001,7 +2013,8 @@ def test_apprise_cli_plugin_loading(mock_post, tmpdir):
 
     # Prepare ourselves a file to work with
     notify_hook_b = tmpdir.mkdir("goodmodule").join("__init__.py")
-    notify_hook_b.write(cleandoc("""
+    notify_hook_b.write(
+        cleandoc("""
     from apprise.decorators import notify
 
     # We want to trigger on anyone who configures a call to clihook://
@@ -2019,7 +2032,8 @@ def test_apprise_cli_plugin_loading(mock_post, tmpdir):
         print("!! {}: {} - {}".format(notify_type, title, body))
 
         # No return (so a return of None) get's translated to True
-    """))
+    """)
+    )
 
     result = runner.invoke(
         cli.main,
@@ -2165,7 +2179,8 @@ def test_apprise_cli_plugin_loading(mock_post, tmpdir):
 
     # Prepare ourselves a file to work with
     notify_hook_b = tmpdir.mkdir("complex").join("complex.py")
-    notify_hook_b.write(cleandoc("""
+    notify_hook_b.write(
+        cleandoc("""
     from apprise.decorators import notify
 
     # We can't over-ride an element that already exists
@@ -2207,7 +2222,8 @@ def test_apprise_cli_plugin_loading(mock_post, tmpdir):
     @notify(on="", name="an invalid schema was specified")
     def mywrapper_06(body, title, notify_type, *args, **kwargs):
         return True
-    """))
+    """)
+    )
 
     result = runner.invoke(
         cli.main,
@@ -2286,13 +2302,13 @@ def test_apprise_cli_plugin_loading(mock_post, tmpdir):
     # to the CLI
     assert result.exit_code == 0
 
-
     result = runner.invoke(
         cli.main,
         [
             "--plugin-path",
             join(str(tmpdir), "complex"),
-            "--notification-type", "invalid",
+            "--notification-type",
+            "invalid",
             "-b",
             "test body",
             # our clihook that returns true
@@ -2308,8 +2324,8 @@ def test_apprise_cli_plugin_loading(mock_post, tmpdir):
             "--plugin-path",
             join(str(tmpdir), "complex"),
             "-b",
-            "-i", "warning"
-            "test body",
+            "-i",
+            "warningtest body",
             # our clihook that returns true
             "clihook1://",
         ],

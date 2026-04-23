@@ -1,7 +1,7 @@
 # BSD 2-Clause License
 #
 # Apprise - Push Notification Library.
-# Copyright (c) 2025, Chris Caron <lead2gold@gmail.com>
+# Copyright (c) 2026, Chris Caron <lead2gold@gmail.com>
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -314,8 +314,8 @@ def apprise_test(do_notify):
     # preferred choice
     assert (
         do_notify(
-            a, title="my title", body="my body",
-            notify_type=NotifyType.WARNING)
+            a, title="my title", body="my body", notify_type=NotifyType.WARNING
+        )
         is True
     )
 
@@ -430,7 +430,6 @@ def apprise_test(do_notify):
             raise TypeError()
 
     class FailNotification(NotifyBase):
-
         def notify(self, **kwargs):
             # Pretend everything is okay
             return False
@@ -485,8 +484,8 @@ def apprise_test(do_notify):
     # cto = Socket Connect Timeout
     plugin = a.instantiate("good://localhost?rto=5.1&cto=10")
     assert isinstance(plugin, NotifyBase)
-    assert plugin.socket_connect_timeout == 10.0
-    assert plugin.socket_read_timeout == 5.1
+    assert plugin.socket_connect_timeout == pytest.approx(10.0)
+    assert plugin.socket_read_timeout == pytest.approx(5.1)
 
     plugin = a.instantiate("good://localhost?rto=invalid&cto=invalid")
     assert isinstance(plugin, NotifyBase)
@@ -663,9 +662,8 @@ def test_apprise_pretty_print():
     assert URLBase.pprint(" ", privacy=False, quote=False, safe="") == " "
 
 
-@mock.patch("requests.get")
-@mock.patch("requests.post")
-def test_apprise_tagging(mock_post, mock_get):
+@mock.patch("requests.request")
+def test_apprise_tagging(mock_request):
     """
     API: Apprise() object tagging functionality
 
@@ -674,12 +672,11 @@ def test_apprise_tagging(mock_post, mock_get):
     def do_notify(server, *args, **kwargs):
         return server.notify(*args, **kwargs)
 
-    apprise_tagging_test(mock_post, mock_get, do_notify)
+    apprise_tagging_test(mock_request, do_notify)
 
 
-@mock.patch("requests.get")
-@mock.patch("requests.post")
-def test_apprise_tagging_async(mock_post, mock_get):
+@mock.patch("requests.request")
+def test_apprise_tagging_async(mock_request):
     """
     API: Apprise() object tagging functionality asynchronous methods
 
@@ -691,10 +688,10 @@ def test_apprise_tagging_async(mock_post, mock_get):
                 server.async_notify(*args, **kwargs)
             )
 
-        apprise_tagging_test(mock_post, mock_get, do_notify)
+        apprise_tagging_test(mock_request, do_notify)
 
 
-def apprise_tagging_test(mock_post, mock_get, do_notify):
+def apprise_tagging_test(mock_request, do_notify):
     # A request
     robj = mock.Mock()
     robj.raw = mock.Mock()
@@ -702,12 +699,10 @@ def apprise_tagging_test(mock_post, mock_get, do_notify):
     robj.raw.read.return_value = ""
     robj.text = ""
     robj.content = ""
-    mock_get.return_value = robj
-    mock_post.return_value = robj
+    mock_request.return_value = robj
 
     # Simulate a successful notification
-    mock_get.return_value.status_code = requests.codes.ok
-    mock_post.return_value.status_code = requests.codes.ok
+    mock_request.return_value.status_code = requests.codes.ok
 
     # Create our object
     a = Apprise()
@@ -857,13 +852,11 @@ def test_apprise_schemas():
         secure_protocol = (None, object)
 
     class HtmlNotification(NotifyBase):
-
         protocol = ("html", "htm")
 
         secure_protocol = ("htmls", "htms")
 
     class MarkDownNotification(NotifyBase):
-
         protocol = "markdown"
 
         secure_protocol = "markdowns"
@@ -1260,10 +1253,8 @@ def test_apprise_asset(tmpdir):
 
     # Write a file
     sub.join(
-        f"{NotifyType.INFO.value}-"
-        f"{NotifyImageSize.XY_256.value}.png").write(
-            "the content doesn't matter for testing."
-    )
+        f"{NotifyType.INFO.value}-{NotifyImageSize.XY_256.value}.png"
+    ).write("the content doesn't matter for testing.")
 
     # Create an asset that will reference our file we just created
     a = AppriseAsset(
@@ -1822,7 +1813,6 @@ def test_apprise_details_plugin_verification():
         "group",
     )
     for entry in details["schemas"]:
-
         # Track the map_to entries (if specified); We need to make sure that
         # these properly map back
         map_to_entries = set()
@@ -1909,7 +1899,6 @@ def test_apprise_details_plugin_verification():
 
                     # Some verification
                     if arg["type"].startswith("choice"):
-
                         # choice:bool is redundant and should be swapped to
                         # just bool
                         assert not arg["type"].endswith("bool")
@@ -1917,7 +1906,8 @@ def test_apprise_details_plugin_verification():
                         # Choices require that a values list is provided
                         assert "values" in arg
                         assert isinstance(
-                            arg["values"], (list, tuple, frozenset, set))
+                            arg["values"], (list, tuple, frozenset, set)
+                        )
                         assert len(arg["values"]) > 0
 
                         # Test default
@@ -2132,18 +2122,64 @@ def test_apprise_details_plugin_verification():
                 assert arg in defined_tokens
 
 
-@mock.patch("requests.post")
+def test_apprise_details_plugin_raw_template_tokens():
+    """
+    API: Apprise() Raw Template Token Verification
+
+    Checks that every plugin's template_tokens and template_args declare
+    an explicit 'type' field before _sanitize_token can silently back-fill
+    a default.  _sanitize_token adds 'type': 'string' when the field is
+    missing, so the post-processed details() output always passes -- this
+    test catches the gap at the source.
+    """
+
+    # Valid Type Regular Expression Checker -- mirrors the one used by
+    # test_apprise_details_plugin_verification so both tests agree on what
+    # constitutes a valid type.
+    is_valid_type_re = re.compile(r"((choice|list):)?(string|bool|int|float)")
+
+    for plugin in N_MGR.plugins():
+        label = plugin.__name__
+
+        for section_name, raw in (
+            ("template_tokens", plugin.template_tokens),
+            ("template_args", plugin.template_args),
+        ):
+            for key, token in raw.items():
+                # alias_of entries are intentionally type-free; skip them
+                if "alias_of" in token:
+                    continue
+
+                assert "type" in token, (
+                    f"{label}.{section_name}[{key!r}] is missing a"
+                    " 'type' field. Every non-alias token must declare"
+                    " its type explicitly -- _sanitize_token silently"
+                    " fills in 'string' and the omission goes"
+                    " undetected by the post-processed details() checks."
+                )
+
+                assert isinstance(token["type"], str) and (
+                    is_valid_type_re.match(token["type"]) is not None
+                ), (
+                    f"{label}.{section_name}[{key!r}]['type'] ="
+                    f" {token['type']!r} is not a valid type string."
+                    " Expected one of: string, bool, int, float,"
+                    " choice:string, list:string, etc."
+                )
+
+
+@mock.patch("requests.request")
 @mock.patch("asyncio.gather", wraps=asyncio.gather)
 @mock.patch(
     "concurrent.futures.ThreadPoolExecutor",
     wraps=concurrent.futures.ThreadPoolExecutor,
 )
-def test_apprise_async_mode(mock_threadpool, mock_gather, mock_post):
+def test_apprise_async_mode(mock_threadpool, mock_gather, mock_request):
     """
     API: Apprise() async_mode tests
 
     """
-    mock_post.return_value.status_code = requests.codes.ok
+    mock_request.return_value.status_code = requests.codes.ok
 
     # Define some servers
     servers = [
@@ -2245,22 +2281,27 @@ def test_notify_matrix_dynamic_importing(tmpdir):
     base.join("__init__.py").write("")
 
     # Test no app_id
-    base.join("NotifyBadFile1.py").write(cleandoc("""
+    base.join("NotifyBadFile1.py").write(
+        cleandoc("""
         class NotifyBadFile1:
             pass
-        """))
+        """)
+    )
 
     # No class of the same name
-    base.join("NotifyBadFile2.py").write(cleandoc("""
+    base.join("NotifyBadFile2.py").write(
+        cleandoc("""
         class BadClassName:
             pass
-        """))
+        """)
+    )
 
     # Exception thrown
     base.join("NotifyBadFile3.py").write("""raise ImportError()""")
 
     # Utilizes a schema:// already occupied (as string)
-    base.join("NotifyGoober.py").write(cleandoc("""
+    base.join("NotifyGoober.py").write(
+        cleandoc("""
         from apprise import NotifyBase
         class NotifyGoober(NotifyBase):
             # This class tests the fact we have a new class name, but we're
@@ -2276,10 +2317,12 @@ def test_notify_matrix_dynamic_importing(tmpdir):
             def parse_url(url, *args, **kwargs):
                 # always parseable
                 return ConfigBase.parse_url(url, verify_host=False)
-        """))
+        """)
+    )
 
     # Utilizes a schema:// already occupied (as tuple)
-    base.join("NotifyBugger.py").write(cleandoc("""
+    base.join("NotifyBugger.py").write(
+        cleandoc("""
         from apprise import NotifyBase
         class NotifyBugger(NotifyBase):
             # This class tests the fact we have a new class name, but we're
@@ -2296,6 +2339,7 @@ def test_notify_matrix_dynamic_importing(tmpdir):
             def parse_url(url, *args, **kwargs):
                 # always parseable
                 return ConfigBase.parse_url(url, verify_host=False)
-            """))
+            """)
+    )
 
     N_MGR.load_modules(path=str(base), name=module_name)
