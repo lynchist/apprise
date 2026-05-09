@@ -71,7 +71,7 @@ notification services. It supports sending alerts to platforms such as: \
 `NextcloudTalk`, `Notica`, `NotificationAPI`, `Notifiarr`, `Notifico`, \
 `ntfy`, `Octopush`, `Office365`, `OneSignal`, `Opsgenie`, `PagerDuty`, \
 `PagerTree`, `ParsePlatform`, `Plivo`, `PopcornNotify`, `Prowl`, \
-`Pushalot`, `PushBullet`, \
+`Postmark`, `Pushalot`, `PushBullet`, \
 `Pushjet`, `PushMe`, `Pushover`, `Pushplus`, `PushSafer`, `Pushy`, `PushDeer`, \
 `QQ Push`, `Revolt`, `Reddit`, `Resend`, `Rocket.Chat`, `RSyslog`, `SendGrid`, \
 `SendPulse`, `ServerChan`, `Seven`, `SFR`, `Signal`, `SIGNL4`, `SimplePush`, \
@@ -79,11 +79,11 @@ notification services. It supports sending alerts to platforms such as: \
 `Splunk`, `Spike`, `Spug Push`, `Super Toasty`, `Streamlabs`, `Stride`, \
 `Synology Chat`, `Syslog`, `Techulus Push`, `Telegram`, `Threema Gateway`, \
 `Twilio`, `Twitter`, `Twist`, `Vapid`, `Viber`, `VictorOps`, `Voipms`, \
-`Vonage`, `WebPush`, `WeCom Bot`, `WhatsApp`, `Webex Teams`, `Workflows`, \
-`WxPusher`, `XBMC`, `XMPP`, and `Zulip`.}
+`Vonage`, `WebPush`, `WeChat (WeCom)`, `WeCom Bot`, `WhatsApp`, \
+`Webex Teams`, `Workflows`, `WxPusher`, `XBMC`, `XMPP`, `Zoom`, and `Zulip`.}
 
 Name:           python-%{pypi_name}
-Version:        1.9.9
+Version:        1.10.0
 Release:        1%{?dist}
 Summary:        A simple wrapper to many popular notification services used today
 License:        BSD-2-Clause
@@ -236,6 +236,9 @@ LANG=C.UTF-8 PYTHONPATH=%{buildroot}%{python3_sitelib}:%{_builddir}/%{name}-%{ve
 %{python3_sitelib}/%{pypi_name}/__pycache__/cli*.py?
 
 %changelog
+* Sun Apr 26 2026 Chris Caron <lead2gold@gmail.com> - 1.10.0-1
+- Updated to v1.10.0
+
 * Sat Mar 21 2026 Chris Caron <lead2gold@gmail.com> - 1.9.9-1
 - Updated to v1.9.9
 

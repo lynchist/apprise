@@ -565,8 +565,7 @@ def test_apprise_cli_nux_env(tmpdir):
     for i in range(0, 10, 2):
         assert lines[i].endswith("good://")
 
-    # This will fail because nothing matches mytag. It's case sensitive
-    # and we would only actually match against myTag
+    # Tags are case-insensitive; mytag matches myTag
     result = runner.invoke(
         cli.main,
         [
@@ -578,15 +577,37 @@ def test_apprise_cli_nux_env(tmpdir):
             "mytag",
         ],
     )
-    assert result.exit_code == 3
+    assert result.exit_code == 0
 
-    # Same command as the one identified above except we set the --dry-run
-    # flag. This causes our list of matched results to be printed only.
-    # However, since we don't match anything; we still fail with a return code
-    # of 2.
+    # Same command with --dry-run; one entry matches so exit code is 0
     result = runner.invoke(
         cli.main,
         ["-b", "has mytag", "--config", str(t), "--tag", "mytag", "--dry-run"],
+    )
+    assert result.exit_code == 0
+
+    # A tag that does not exist in the config produces no matches; the live
+    # run returns exit code 3 to signal "no services found".
+    result = runner.invoke(
+        cli.main,
+        ["-b", "no match", "--config", str(t), "--tag", "nonexistent"],
+    )
+    assert result.exit_code == 3
+
+    # --dry-run must mirror the live result: a non-matching tag also returns
+    # exit code 3, not 0.  This guards against dry-run masking "no services
+    # found" by always reporting success.
+    result = runner.invoke(
+        cli.main,
+        [
+            "-b",
+            "no match",
+            "--config",
+            str(t),
+            "--tag",
+            "nonexistent",
+            "--dry-run",
+        ],
     )
     assert result.exit_code == 3
 

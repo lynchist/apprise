@@ -131,6 +131,7 @@ keywords = [
     "ParsePlatform",
     "Plivo",
     "PopcornNotify",
+    "Postmark",
     "Power Automate",
     "Prowl",
     "Push Notifications",
@@ -188,6 +189,7 @@ keywords = [
     "Vonage",
     "Webex",
     "Webpush",
+    "WeChat (WeCom)",
     "WeCom Bot",
     "WhatsApp",
     "Windows",
@@ -196,6 +198,7 @@ keywords = [
     "XBMC",
     "XML",
     "XMPP",
+    "Zoom",
     "Zulip",
 ]
 

@@ -949,6 +949,10 @@ def test_apprise_urlbase_object():
     assert base.request_url == "http:///"
     assert base.url().startswith("http:///")
 
+    # URLBase.__len__ defaults to 1; subclasses that support multiple
+    # targets override this to return the actual count.
+    assert len(base) == 1
+
 
 def test_apprise_unique_id():
     """
@@ -1787,6 +1791,9 @@ def test_apprise_details_plugin_verification():
         "format",
         "overflow",
         "emojis",
+        "retry",
+        "wait",
+        "optional",
         # URLBase parameters:
         "verify",
         "cto",
